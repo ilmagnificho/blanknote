@@ -87,35 +87,34 @@ export async function analyzeAndSave(
         };
     } catch (error) {
         console.error("분석 중 오류:", error);
-        console.error("에러 상세:", JSON.stringify(error, null, 2));
 
         // 사용자 친화적인 에러 메시지
         if (error instanceof Error) {
-            console.error("에러 메시지:", error.message);
-            console.error("에러 스택:", error.stack);
+            const msg = error.message.toLowerCase();
 
-            if (error.message.includes("rate_limit")) {
+            if (msg.includes("rate_limit") || msg.includes("429")) {
                 return {
                     success: false,
                     error: "AI가 바빠요. 잠시 후 다시 시도해주세요.",
                 };
             }
-            if (error.message.includes("insufficient_quota")) {
+            if (msg.includes("insufficient_quota") || msg.includes("exceeded your current quota")) {
                 return {
                     success: false,
                     error: "무의식 탐색 에너지가 부족합니다. 관리자에게 문의해주세요.",
                 };
             }
-            // 실제 에러 메시지 표시 (디버깅용)
-            return {
-                success: false,
-                error: `디버그: ${error.message}`,
-            };
+            if (msg.includes("api_key") || msg.includes("invalid_api_key")) {
+                return {
+                    success: false,
+                    error: "서비스 설정에 문제가 있습니다. 관리자에게 문의해주세요.",
+                };
+            }
         }
 
         return {
             success: false,
-            error: "무의식 접속에 실패했습니다. 다시 시도해주세요.",
+            error: "무의식 접속에 실패했습니다. 잠시 후 다시 시도해주세요.",
         };
     }
 }
