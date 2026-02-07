@@ -43,6 +43,16 @@ const createInitialAnswers = (questions: SCTQuestion[]): SCTAnswer[] =>
         answer: "",
     }));
 
+// Fisher-Yates Shuffle
+const shuffle = <T>(array: T[]): T[] => {
+    const newArray = [...array];
+    for (let i = newArray.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
+    }
+    return newArray;
+};
+
 const initialState = {
     phase: "intro" as TestPhase,
     currentQuestionIndex: 0,
@@ -107,10 +117,13 @@ export const useTestStore = create<TestState>()(
             },
 
             startDeepPhase: () => {
+                // 전체 질문 풀에서 7개 랜덤 선택
+                const randomQuestions = shuffle(DEEP_QUESTIONS).slice(0, 7);
+
                 set({
                     phase: "deep",
                     currentQuestionIndex: 0,
-                    deepAnswers: createInitialAnswers(DEEP_QUESTIONS),
+                    deepAnswers: createInitialAnswers(randomQuestions),
                 });
             },
 
@@ -127,8 +140,16 @@ export const useTestStore = create<TestState>()(
             },
 
             getCurrentQuestions: () => {
-                const { phase } = get();
-                return phase === "intro" ? INTRO_QUESTIONS : DEEP_QUESTIONS;
+                const { phase, deepAnswers } = get();
+                if (phase === "intro") {
+                    return INTRO_QUESTIONS;
+                }
+                // Deep 단계에서는 선택된(저장된) 질문들만 반환
+                return deepAnswers.map(a => ({
+                    id: a.questionId,
+                    prompt: a.prompt,
+                    phase: "deep" as TestPhase
+                }));
             },
 
             getCurrentQuestion: () => {

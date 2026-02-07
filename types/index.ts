@@ -145,6 +145,19 @@ export const DEEP_QUESTIONS: SCTQuestion[] = [
   { id: 10, prompt: "다른 사람들은 모르지만 나는", phase: "deep" },
   { id: 11, prompt: "10년 후의 나는", phase: "deep" },
   { id: 12, prompt: "내 인생에서 가장 중요한 것은", phase: "deep" },
+  { id: 13, prompt: "내가 가장 두려워하는 실패는", phase: "deep" },
+  { id: 14, prompt: "나를 가장 힘들게 했던 기억은", phase: "deep" },
+  { id: 15, prompt: "내가 진정으로 원하는 사랑은", phase: "deep" },
+  { id: 16, prompt: "나를 구속하는 것은", phase: "deep" },
+  { id: 17, prompt: "내가 도망치고 싶은 순간은", phase: "deep" },
+  { id: 18, prompt: "나의 무의식이 나에게 경고하는 것은", phase: "deep" },
+  { id: 19, prompt: "어릴 적 나에게 해주고 싶은 말은", phase: "deep" },
+  { id: 20, prompt: "내가 가장 듣고 싶은 위로는", phase: "deep" },
+  { id: 21, prompt: "나의 가장 큰 약점은", phase: "deep" },
+  { id: 22, prompt: "내가 용서할 수 없는 사람은", phase: "deep" },
+  { id: 23, prompt: "내가 잃어버린 것은", phase: "deep" },
+  { id: 24, prompt: "나를 지탱해주는 힘은", phase: "deep" },
+  { id: 25, prompt: "내가 세상에 남기고 싶은 것은", phase: "deep" },
 ];
 
 /**

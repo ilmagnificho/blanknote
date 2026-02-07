@@ -177,14 +177,54 @@ export async function generateImageAfterPayment(
         // DALL-E 이미지 생성
         const tempImageUrl = await generateUnconsciousImage(result.analysis_text.imagePrompt);
 
-        // TODO: Supabase Storage에 이미지 저장 및 영구 URL 생성
-        // 현재는 임시 URL 저장 (1시간 만료)
+        // Supabase Storage에 이미지 업로드 및 영구 URL 생성
+        let finalImageUrl = tempImageUrl;
+        try {
+            // 1. 버킷 생성 시도 (이미 존재하면 무시됨 - 단, 에러 체크 필요)
+            const { error: bucketError } = await supabase.storage.createBucket("images", {
+                public: true,
+                fileSizeLimit: 10485760, // 10MB
+                allowedMimeTypes: ["image/png", "image/jpeg"],
+            });
+            if (bucketError && !bucketError.message.includes("already exists")) {
+                console.warn("버킷 생성 실패 (이미 존재할 수 있음):", bucketError);
+            }
+
+            // 2. 이미지 다운로드
+            const imageResponse = await fetch(tempImageUrl);
+            if (!imageResponse.ok) throw new Error("이미지 다운로드 실패");
+            const imageBuffer = await imageResponse.arrayBuffer();
+
+            // 3. Storage 업로드
+            const fileName = `${resultId}_${Date.now()}.png`;
+            const { error: uploadError } = await supabase.storage
+                .from("images")
+                .upload(fileName, imageBuffer, {
+                    contentType: "image/png",
+                    upsert: true,
+                });
+
+            if (uploadError) {
+                console.error("Storage 업로드 실패:", uploadError);
+                // 업로드 실패 시 임시 URL 사용
+            } else {
+                // 4. Public URL 획득
+                const { data: publicUrlData } = supabase.storage
+                    .from("images")
+                    .getPublicUrl(fileName);
+
+                finalImageUrl = publicUrlData.publicUrl;
+            }
+        } catch (storageError) {
+            console.error("이미지 스토리지 저장 중 오류:", storageError);
+            // 오류 발생 시에도 임시 URL로 계속 진행
+        }
 
         // DB 업데이트
         const { error: updateError } = await supabase
             .from("results")
             .update({
-                image_url: tempImageUrl,
+                image_url: finalImageUrl,
                 is_paid: true,
             })
             .eq("id", resultId);
@@ -193,7 +233,7 @@ export async function generateImageAfterPayment(
             return { success: false, error: "이미지 저장 실패" };
         }
 
-        return { success: true, imageUrl: tempImageUrl };
+        return { success: true, imageUrl: finalImageUrl };
     } catch (error) {
         console.error("이미지 생성 실패:", error);
         return { success: false, error: "이미지 생성에 실패했습니다." };

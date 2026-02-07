@@ -1,9 +1,7 @@
-// app/teaser/[id]/teaser-client.tsx
-// 티저 결과 클라이언트 컴포넌트
-
 "use client";
 
-import { motion } from "framer-motion";
+import { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import type { Result, IntroAnalysisResult } from "@/types";
@@ -18,172 +16,270 @@ export function TeaserClient({ result }: TeaserClientProps) {
     const { startDeepPhase } = useTestStore();
     const analysis = result.intro_analysis as IntroAnalysisResult;
 
+    // 인트로 애니메이션 상태 (true: 인트로 실행 중, false: 결과 표시)
+    const [showResult, setShowResult] = useState(false);
+
+    // 인트로 시퀀스 완료 핸들러
+    const handleIntroComplete = () => {
+        setShowResult(true);
+    };
+
     const handleStartDeep = () => {
-        // Deep 테스트 시작
+        // Deep 테스트 시작 및 이동
         startDeepPhase();
         router.push(`/test/deep?resultId=${result.id}`);
     };
 
     return (
-        <div className="min-h-screen bg-black py-12 px-6">
-            {/* 로고 */}
-            <div className="text-center mb-8">
-                <Link href="/" className="text-xl font-mono tracking-widest text-zinc-600">
-                    Blanknote<span className="text-white">_</span>
-                </Link>
-            </div>
-
-            {/* 헤더 */}
-            <motion.div
-                initial={{ opacity: 0, y: -20 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="text-center mb-12"
-            >
-                <h2 className="text-2xl md:text-3xl font-medium text-white mb-3">
-                    무의식의 첫 번째 신호
-                </h2>
-                <p className="text-zinc-500 font-light">
-                    내면 깊은 곳에서 희미한 신호가 잡혔습니다.
-                </p>
-            </motion.div>
-
-            {/* 유형 라벨 */}
-            <motion.div
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: 0.2 }}
-                className="text-center mb-10"
-            >
-                <div className="inline-block relative">
-                    <div className="absolute inset-0 bg-purple-500/20 blur-xl rounded-full"></div>
-                    <span className="relative inline-block px-8 py-4 bg-zinc-900/80 border border-purple-500/30 rounded-full backdrop-blur-sm">
-                        <span className="text-2xl font-medium text-transparent bg-clip-text bg-gradient-to-r from-purple-300 via-pink-300 to-purple-300 animate-pulse">
-                            {analysis?.typeLabel || "신호 분석 중..."}
-                        </span>
-                    </span>
-                </div>
-            </motion.div>
-
-            {/* 키워드 태그 */}
-            <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.4 }}
-                className="flex flex-wrap justify-center gap-3 mb-12"
-            >
-                {analysis?.keywords.map((keyword, i) => (
-                    <span
-                        key={i}
-                        className="px-4 py-2 bg-zinc-900 border border-zinc-700 rounded-full text-zinc-400 text-sm font-light tracking-wide"
+        <div className="min-h-screen bg-black text-white selection:bg-purple-500/30">
+            <AnimatePresence mode="wait">
+                {!showResult ? (
+                    <IntroSequence key="intro" onComplete={handleIntroComplete} />
+                ) : (
+                    <motion.div
+                        key="result"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        transition={{ duration: 1 }}
+                        className="w-full"
                     >
-                        {keyword}
-                    </span>
-                ))}
-            </motion.div>
+                        <TeaserContent
+                            analysis={analysis}
+                            onStartDeep={handleStartDeep}
+                        />
+                    </motion.div>
+                )}
+            </AnimatePresence>
+        </div>
+    );
+}
 
-            {/* 한 줄 분석 */}
-            <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.6 }}
-                className="max-w-lg mx-auto mb-16"
-            >
-                <div className="p-8 bg-zinc-900/30 border border-zinc-800 rounded-2xl text-center relative overflow-hidden group">
-                    <div className="absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-transparent via-purple-500/50 to-transparent opacity-50"></div>
-                    <p className="text-xl md:text-2xl text-zinc-200 font-serif leading-relaxed italic">
-                        &ldquo;{analysis?.oneLiner}&rdquo;
-                    </p>
-                </div>
-            </motion.div>
+// ----------------------------------------------------------------------
+// 1. Cinematic Intro Sequence
+// ----------------------------------------------------------------------
 
-            {/* 티저 - 블러 처리된 상세 분석 미리보기 */}
-            <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.8 }}
-                className="max-w-lg mx-auto mb-12"
-            >
-                <div className="relative p-1 rounded-2xl bg-gradient-to-b from-zinc-800 to-transparent">
-                    <div className="p-6 bg-black rounded-xl overflow-hidden relative">
-                        {/* 블러된 가짜 분석 내용 */}
-                        <div className="blur-sm opacity-50 pointer-events-none select-none space-y-6">
-                            <div>
-                                <h3 className="text-sm text-purple-400/50 mb-2">자아 이미지</h3>
-                                <p className="text-zinc-600 leading-relaxed">
-                                    당신이 인지하지 못했던 내면의 거울에는...
-                                </p>
-                            </div>
-                            <div>
-                                <h3 className="text-sm text-purple-400/50 mb-2">숨겨진 상처</h3>
-                                <p className="text-zinc-600 leading-relaxed">
-                                    오랜 시간 덮어두었던 기억의 조각들이...
-                                </p>
-                            </div>
-                            <div>
-                                <h3 className="text-sm text-purple-400/50 mb-2">진정한 욕구</h3>
-                                <p className="text-zinc-600 leading-relaxed">
-                                    당신이 진정으로 갈망하고 있는 것은 사실...
+function IntroSequence({ onComplete }: { onComplete: () => void }) {
+    const [step, setStep] = useState(0);
+
+    useEffect(() => {
+        // 시퀀스 타이밍 조절
+        const times = [0, 2500, 5500, 8500]; // 각 단계별 시작 시간 (ms)
+
+        const t1 = setTimeout(() => setStep(1), times[1]);
+        const t2 = setTimeout(() => setStep(2), times[2]);
+        const t3 = setTimeout(() => {
+            setStep(3);
+            setTimeout(onComplete, 1000); // 마지막 텍스트 후 결과 전환
+        }, times[3]);
+
+        return () => {
+            clearTimeout(t1);
+            clearTimeout(t2);
+            clearTimeout(t3);
+        };
+    }, [onComplete]);
+
+    return (
+        <div className="flex items-center justify-center min-h-screen px-6 text-center">
+            <AnimatePresence mode="wait">
+                {step === 0 && (
+                    <motion.div
+                        key="step0"
+                        initial={{ opacity: 0, scale: 0.9 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 1.1, filter: "blur(10px)" }}
+                        transition={{ duration: 0.8 }}
+                    >
+                        <span className="text-purple-500 font-mono text-sm tracking-widest mb-2 block">
+                            SYSTEM ACTIVE
+                        </span>
+                        <h2 className="text-2xl md:text-3xl font-light text-white">
+                            SCT 문장완성검사 모델 가동
+                        </h2>
+                    </motion.div>
+                )}
+                {step === 1 && (
+                    <motion.div
+                        key="step1"
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -20, filter: "blur(10px)" }}
+                        transition={{ duration: 0.8 }}
+                        className="max-w-md mx-auto"
+                    >
+                        <p className="text-zinc-400 text-lg leading-relaxed">
+                            1919년, <strong className="text-zinc-200">에빙하우스</strong>가 고안한<br />
+                            투사적 심리 검사를 시작합니다.
+                        </p>
+                    </motion.div>
+                )}
+                {step === 2 && (
+                    <motion.div
+                        key="step2"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0, scale: 0.9 }}
+                        transition={{ duration: 0.8 }}
+                    >
+                        <div className="relative">
+                            <div className="absolute inset-0 bg-purple-500/20 blur-3xl rounded-full animate-pulse"></div>
+                            <h2 className="relative text-3xl md:text-4xl font-serif italic text-transparent bg-clip-text bg-gradient-to-r from-purple-200 via-white to-purple-200">
+                                무의식의 패턴 발견
+                            </h2>
+                        </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+        </div>
+    );
+}
+
+// ----------------------------------------------------------------------
+// 2. Main Teaser Content
+// ----------------------------------------------------------------------
+
+function TeaserContent({
+    analysis,
+    onStartDeep
+}: {
+    analysis: IntroAnalysisResult,
+    onStartDeep: () => void
+}) {
+    return (
+        <div className="pb-20">
+            {/* Header */}
+            <header className="py-6 px-6 text-center border-b border-white/5">
+                <Link href="/" className="text-xl font-mono tracking-widest text-zinc-600 hover:text-zinc-400 transition-colors">
+                    Blanknote<span className="text-purple-500">_</span>SCT
+                </Link>
+            </header>
+
+            <main className="px-6 pt-12">
+                {/* 1. Result Teaser */}
+                <section className="text-center mb-16">
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.2 }}
+                    >
+                        <span className="inline-block px-3 py-1 bg-purple-500/10 border border-purple-500/20 rounded-full text-purple-400 text-xs font-medium tracking-wide mb-6">
+                            SCT ANALYSIS RESULT
+                        </span>
+
+                        <h1 className="text-3xl md:text-4xl font-light text-white mb-4 leading-tight">
+                            당신의 무의식 유형은<br />
+                            <span className="font-serif italic text-transparent bg-clip-text bg-gradient-to-r from-purple-300 to-pink-300">
+                                {analysis?.typeLabel}
+                            </span>
+                        </h1>
+
+                        <div className="flex flex-wrap justify-center gap-2 mb-10">
+                            {analysis?.keywords.map((k, i) => (
+                                <span key={i} className="text-zinc-500 text-sm">#{k}</span>
+                            ))}
+                        </div>
+
+                        {/* One Liner Card */}
+                        <div className="max-w-xl mx-auto p-1 rounded-2xl bg-gradient-to-b from-white/10 to-transparent">
+                            <div className="bg-zinc-900/90 backdrop-blur-sm p-8 rounded-xl border border-white/5 shadow-2xl">
+                                <p className="text-xl text-zinc-300 font-serif leading-relaxed">
+                                    &ldquo;{analysis?.oneLiner}&rdquo;
                                 </p>
                             </div>
                         </div>
+                    </motion.div>
+                </section>
 
-                        {/* 잠금 오버레이 */}
-                        <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/60 backdrop-blur-[2px]">
-                            <span className="text-4xl mb-4 drop-shadow-lg">🔒</span>
-                            <p className="text-white font-medium mb-2 text-lg">심연의 문이 닫혀있습니다</p>
-                            <p className="text-zinc-400 text-sm text-center px-6 leading-relaxed">
-                                {analysis?.teaser || "이곳에는 당신조차 몰랐던 진실이 숨겨져 있습니다."}
+                {/* 2. Authority & Trust (SCT 설명) */}
+                <section className="max-w-2xl mx-auto mb-20">
+                    <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 md:p-8">
+                        <div className="flex items-start gap-4 mb-4">
+                            <span className="text-2xl">🧠</span>
+                            <div>
+                                <h3 className="text-lg text-white font-medium mb-1">
+                                    단순한 심리테스트가 아닙니다
+                                </h3>
+                                <p className="text-zinc-400 text-sm leading-relaxed">
+                                    <strong>문장완성검사(SCT)</strong>는 1919년 에빙하우스가 고안한 이래, 임상 심리학 현장에서 가장 널리 사용되는 <strong>투사적 검사(Projective Test)</strong> 기법입니다.
+                                </p>
+                            </div>
+                        </div>
+                        <div className="pl-10 border-l-2 border-zinc-800 space-y-3">
+                            <p className="text-zinc-500 text-sm">
+                                의식적인 방어가 허술해진 틈을 타, 당신의 <strong>진짜 속마음, 억압된 욕구, 숨겨진 상처</strong>를 드러냅니다.
                             </p>
                         </div>
                     </div>
-                </div>
-            </motion.div>
+                </section>
 
-            {/* CTA - 심층 분석 시작 */}
-            <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 1.0 }}
-                className="text-center space-y-6"
-            >
-                <div className="relative group cursor-pointer" onClick={handleStartDeep}>
-                    <div className="absolute -inset-1 bg-gradient-to-r from-purple-600 to-pink-600 rounded-full blur opacity-30 group-hover:opacity-60 transition duration-1000 group-hover:duration-200"></div>
-                    <button
-                        className="relative w-full max-w-xs mx-auto block px-8 py-5 
-                            bg-zinc-900 ring-1 ring-white/10
-                            text-white font-medium rounded-full
-                            group-hover:bg-zinc-800 transition-all text-lg tracking-wide"
-                    >
-                        🗝️ 더 깊은 진실 마주하기
-                    </button>
-                </div>
-                <p className="text-zinc-500 text-xs tracking-widest uppercase">
-                    7 Questions • Deep Analysis
-                </p>
-            </motion.div>
+                {/* 3. Deep Analysis Preview (Paywall) */}
+                <section className="max-w-2xl mx-auto mb-12">
+                    <div className="text-center mb-8">
+                        <p className="text-zinc-400 text-sm mb-2">당신의 무의식 심층 보고서</p>
+                        <h2 className="text-2xl text-white font-light">지금, 당신의 깊은 곳을 확인하세요</h2>
+                    </div>
 
-            {/* 공유 옵션 */}
-            <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 1.2 }}
-                className="text-center mt-12"
-            >
-                <p className="text-zinc-600 text-sm mb-4">초기 결과 공유하기</p>
-                <div className="flex justify-center gap-4">
-                    <button
-                        onClick={() => {
-                            navigator.clipboard.writeText(
-                                `나의 무의식 유형: ${analysis?.typeLabel}\n"${analysis?.oneLiner}"\n\n👉 blanknote.app`
-                            );
-                            alert("복사되었습니다!");
-                        }}
-                        className="px-4 py-2 bg-zinc-800 hover:bg-zinc-700 rounded-full text-zinc-300 text-sm transition-colors"
-                    >
-                        📋 링크 복사
-                    </button>
-                </div>
-            </motion.div>
+                    <div className="relative group">
+                        {/* 블러 처리된 리스트 */}
+                        <div className="space-y-3 filter blur-sm opacity-60 select-none pointer-events-none">
+                            <PreviewItem title="🕵️ Dark MBTI" desc="당신도 모르는 당신의 그림자 성격 유형" />
+                            <PreviewItem title="💔 관계의 패턴" desc="왜 늘 비슷한 문제로 상처받는가?" />
+                            <PreviewItem title="🛡️ 심리적 방어기제" desc="나는 어떤 방식으로 세상과 싸우고 있는가" />
+                            <PreviewItem title="💎 내면의 잠재력" desc="가장 나다운 모습으로 성공하는 방법" />
+                        </div>
+
+                        {/* 잠금 오버레이 */}
+                        <div className="absolute inset-0 flex flex-col items-center justify-center z-10">
+                            <div className="bg-zinc-900/90 backdrop-blur-md p-6 md:p-8 rounded-2xl border border-purple-500/30 shadow-2xl text-center max-w-sm w-full mx-4 transform transition-transform hover:scale-105 duration-300">
+                                <span className="text-4xl mb-4 block">🔓</span>
+                                <h3 className="text-xl text-white font-medium mb-2">
+                                    분석 결과가 도착했습니다
+                                </h3>
+                                <p className="text-zinc-400 text-sm mb-6">
+                                    {analysis?.teaser || "이곳에는 당신조차 몰랐던 진실이 숨겨져 있습니다."}
+                                </p>
+
+                                <button
+                                    onClick={onStartDeep}
+                                    className="w-full py-4 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white font-medium rounded-xl shadow-lg shadow-purple-900/40 transition-all flex items-center justify-center gap-2 group-hover:gap-3"
+                                >
+                                    <span>내 무의식 해제하기</span>
+                                    <span className="text-white/70">→</span>
+                                </button>
+
+                                <p className="mt-4 text-xs text-zinc-500">
+                                    Start Deep Analysis • 7 Questions
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                {/* 4. Social Proof & Guarantee */}
+                <section className="text-center max-w-sm mx-auto space-y-2">
+                    <div className="flex items-center justify-center gap-1 text-yellow-500 text-sm">
+                        <span>★</span><span>★</span><span>★</span><span>★</span><span>★</span>
+                    </div>
+                    <p className="text-zinc-500 text-xs">
+                        "살면서 한 번도 본 적 없던 나의 진짜 모습을 마주했습니다."<br />
+                        <span className="text-zinc-600 text-[10px] mt-1 block">- Beta Tester 후기 중</span>
+                    </p>
+                </section>
+            </main>
+        </div>
+    );
+}
+
+function PreviewItem({ title, desc }: { title: string, desc: string }) {
+    return (
+        <div className="flex items-center gap-4 p-4 bg-zinc-800/50 rounded-xl border border-white/5">
+            <div className="w-10 h-10 rounded-full bg-zinc-700 flex items-center justify-center text-lg">
+                🔒
+            </div>
+            <div>
+                <h4 className="text-zinc-300 text-sm font-medium">{title}</h4>
+                <p className="text-zinc-400 text-xs">{desc}</p>
+            </div>
         </div>
     );
 }
