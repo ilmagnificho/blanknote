@@ -16,6 +16,15 @@ export function TeaserClient({ result }: TeaserClientProps) {
     const { startDeepPhase } = useTestStore();
     const analysis = result.intro_analysis as IntroAnalysisResult;
 
+    // keywords가 객체({1: 'a', 2: 'b'})로 저장된 경우 배열로 변환
+    const toStringArray = (val: unknown): string[] => {
+        if (!val) return [];
+        if (Array.isArray(val)) return val.map(v => String(v));
+        if (typeof val === 'object') return Object.values(val).map(v => String(v));
+        return [];
+    };
+    const keywords = toStringArray(analysis?.keywords);
+
     // 인트로 애니메이션 상태 (true: 인트로 실행 중, false: 결과 표시)
     const [showResult, setShowResult] = useState(false);
 
@@ -145,6 +154,15 @@ function TeaserContent({
     analysis: IntroAnalysisResult,
     onStartDeep: () => void
 }) {
+    // keywords가 객체({1: 'a', 2: 'b'})로 저장된 경우 배열로 변환
+    const toStringArray = (val: unknown): string[] => {
+        if (!val) return [];
+        if (Array.isArray(val)) return val.map(v => String(v));
+        if (typeof val === 'object') return Object.values(val).map(v => String(v));
+        return [];
+    };
+    const keywords = toStringArray(analysis?.keywords);
+
     return (
         <div className="pb-20">
             {/* Header */}
@@ -174,7 +192,7 @@ function TeaserContent({
                         </h1>
 
                         <div className="flex flex-wrap justify-center gap-2 mb-10">
-                            {analysis?.keywords.map((k, i) => (
+                            {keywords.map((k, i) => (
                                 <span key={i} className="text-zinc-500 text-sm">#{k}</span>
                             ))}
                         </div>
