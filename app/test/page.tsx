@@ -30,12 +30,12 @@ export default function TestPage() {
 
     const [showLoading, setShowLoading] = useState(false);
 
-    // 이미 Deep 단계라면 처음부터
+    // 컴포넌트 마운트 시 초기화 (Intro 단계)
     useEffect(() => {
-        if (phase === "deep") {
+        if (phase !== "deep") {
             reset();
         }
-    }, [phase, reset]);
+    }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
     // Intro 분석 완료 핸들러
     const handleComplete = async () => {
@@ -88,14 +88,8 @@ export default function TestPage() {
             </header>
 
             {/* 진행 표시줄 */}
-            <div className="px-6 mb-8">
-                <div className="max-w-lg mx-auto space-y-2">
-                    <div className="flex justify-between text-sm text-zinc-500">
-                        <span>기본 분석</span>
-                        <span>{currentQuestionIndex + 1} / 5</span>
-                    </div>
-                    <ProgressBar />
-                </div>
+            <div className="px-6 mb-8 text-center text-sm text-zinc-500">
+                <span>기본 분석 (5문항)</span>
             </div>
 
             {/* 질문 캐러셀 */}

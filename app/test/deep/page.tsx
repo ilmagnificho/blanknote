@@ -88,14 +88,8 @@ function DeepTestContent() {
             </header>
 
             {/* 진행 표시줄 */}
-            <div className="px-6 mb-8">
-                <div className="max-w-lg mx-auto space-y-2">
-                    <div className="flex justify-between text-sm text-zinc-500">
-                        <span>심층 분석</span>
-                        <span>{currentQuestionIndex + 1} / 7</span>
-                    </div>
-                    <ProgressBar />
-                </div>
+            <div className="px-6 mb-8 text-center text-sm text-zinc-500">
+                <span>심층 분석 (추가 7문항)</span>
             </div>
 
             {/* 질문 캐러셀 */}
