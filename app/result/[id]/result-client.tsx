@@ -17,6 +17,14 @@ export function ResultClient({ result }: ResultClientProps) {
     const analysis = result.analysis_text as AnalysisResult;
     const isPaid = result.is_paid;
 
+    // keywords가 객체({1: 'a', 2: 'b'})로 저장된 경우 배열로 변환
+    const toArray = (val: unknown): string[] => {
+        if (Array.isArray(val)) return val;
+        if (val && typeof val === 'object') return Object.values(val) as string[];
+        return [];
+    };
+    const keywords = toArray(analysis?.keywords);
+
     const [isGenerating, setIsGenerating] = useState(false);
     const [showStickyButton, setShowStickyButton] = useState(false);
     const router = useRouter();
@@ -195,7 +203,7 @@ export function ResultClient({ result }: ResultClientProps) {
 
             {/* 키워드 태그 */}
             <div className="mb-12">
-                <KeywordTags keywords={Array.isArray(analysis?.keywords) ? analysis.keywords : []} />
+                <KeywordTags keywords={keywords} />
             </div>
 
             {/* 한 줄 분석 */}
@@ -441,7 +449,7 @@ export function ResultClient({ result }: ResultClientProps) {
                 transition={{ delay: isPaid ? 0.8 : 1.0 }}
             >
                 <ShareButton
-                    keywords={Array.isArray(analysis?.keywords) ? analysis.keywords : []}
+                    keywords={keywords}
                     oneLiner={analysis?.oneLiner || ""}
                 />
             </motion.div>
