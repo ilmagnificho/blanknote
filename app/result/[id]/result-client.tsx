@@ -20,20 +20,94 @@ export function ResultClient({ result }: ResultClientProps) {
     const [isGenerating, setIsGenerating] = useState(false);
     const router = useRouter();
 
-    // 이미지 다운로드 핸들러
+    // 이미지 다운로드 핸들러 (Canvas API로 텍스트 오버레이)
     const handleDownload = async () => {
         if (!result.image_url) return;
+
+        const oneLiner = result.analysis_text?.oneLiner || "당신의 내면은 깊고 고요합니다.";
+
         try {
-            const response = await fetch(result.image_url);
-            const blob = await response.blob();
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement("a");
-            a.href = url;
-            a.download = `blanknote-${result.id.slice(0, 8)}.png`;
-            document.body.appendChild(a);
-            a.click();
-            window.URL.revokeObjectURL(url);
-            document.body.removeChild(a);
+            const img = new Image();
+            img.crossOrigin = "anonymous";
+
+            img.onload = () => {
+                const canvas = document.createElement("canvas");
+                const ctx = canvas.getContext("2d");
+                if (!ctx) return;
+
+                canvas.width = img.width;
+                canvas.height = img.height;
+
+                // 1. 이미지 그리기
+                ctx.drawImage(img, 0, 0);
+
+                // 2. 그라데이션 오버레이 (가독성)
+                const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+                gradient.addColorStop(0, "rgba(0,0,0,0.3)");
+                gradient.addColorStop(0.4, "rgba(0,0,0,0)");
+                gradient.addColorStop(0.6, "rgba(0,0,0,0)");
+                gradient.addColorStop(1, "rgba(0,0,0,0.5)");
+                ctx.fillStyle = gradient;
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                // 3. 텍스트 설정
+                const fontSize = Math.floor(canvas.width / 25);
+                ctx.font = `italic ${fontSize}px Georgia, serif`;
+                ctx.fillStyle = "white";
+                ctx.textAlign = "center";
+                ctx.shadowColor = "rgba(0,0,0,0.8)";
+                ctx.shadowBlur = 15;
+                ctx.shadowOffsetX = 2;
+                ctx.shadowOffsetY = 2;
+
+                // 4. 텍스트 줄바꿈 처리
+                const maxWidth = canvas.width * 0.85;
+                const lineHeight = fontSize * 1.4;
+                const text = `"${oneLiner}"`;
+                const words = text.split(" ");
+                let line = "";
+                const lines: string[] = [];
+
+                for (const word of words) {
+                    const testLine = line + word + " ";
+                    const metrics = ctx.measureText(testLine);
+                    if (metrics.width > maxWidth && line !== "") {
+                        lines.push(line.trim());
+                        line = word + " ";
+                    } else {
+                        line = testLine;
+                    }
+                }
+                lines.push(line.trim());
+
+                // 5. 텍스트 그리기 (중앙)
+                const totalHeight = lines.length * lineHeight;
+                let y = (canvas.height - totalHeight) / 2 + fontSize / 2;
+
+                for (const ln of lines) {
+                    ctx.fillText(ln, canvas.width / 2, y);
+                    y += lineHeight;
+                }
+
+                // 6. 다운로드
+                canvas.toBlob((blob) => {
+                    if (!blob) return;
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement("a");
+                    a.href = url;
+                    a.download = `blanknote-${result.id.slice(0, 8)}.png`;
+                    document.body.appendChild(a);
+                    a.click();
+                    URL.revokeObjectURL(url);
+                    document.body.removeChild(a);
+                }, "image/png");
+            };
+
+            img.onerror = () => {
+                alert("이미지 로드에 실패했습니다. 다시 시도해주세요.");
+            };
+
+            img.src = result.image_url;
         } catch (e) {
             console.error(e);
             alert("이미지 다운로드에 실패했습니다.");
@@ -191,29 +265,59 @@ export function ResultClient({ result }: ResultClientProps) {
                 className="max-w-lg mx-auto mb-16"
             >
                 {isPaid ? (
-                    // 유료 - 전체 공개
+                    // 유료 - 전체 공개 (10개 섹션)
                     <div className="p-8 bg-zinc-900/50 border border-zinc-800 rounded-2xl space-y-8 backdrop-blur-sm">
                         <div>
-                            <h3 className="text-sm font-medium text-purple-400 mb-3 tracking-wider uppercase">자아 이미지</h3>
+                            <h3 className="text-sm font-medium text-purple-400 mb-3 tracking-wider uppercase">🪞 거울의 방</h3>
                             <p className="text-zinc-300 leading-relaxed text-lg font-light">{analysis?.deepAnalysis?.selfImage}</p>
                         </div>
                         <div>
-                            <h3 className="text-sm font-medium text-purple-400 mb-3 tracking-wider uppercase">대인관계 패턴</h3>
+                            <h3 className="text-sm font-medium text-purple-400 mb-3 tracking-wider uppercase">⭐ 관계의 별자리</h3>
                             <p className="text-zinc-300 leading-relaxed text-lg font-light">{analysis?.deepAnalysis?.relationships}</p>
                         </div>
                         <div>
-                            <h3 className="text-sm font-medium text-purple-400 mb-3 tracking-wider uppercase">숨겨진 상처</h3>
+                            <h3 className="text-sm font-medium text-purple-400 mb-3 tracking-wider uppercase">🔮 기억의 조각들</h3>
                             <p className="text-zinc-300 leading-relaxed text-lg font-light">{analysis?.deepAnalysis?.trauma}</p>
                         </div>
                         {analysis?.deepAnalysis?.desires && (
                             <div>
-                                <h3 className="text-sm font-medium text-purple-400 mb-3 tracking-wider uppercase">심연의 욕구</h3>
+                                <h3 className="text-sm font-medium text-purple-400 mb-3 tracking-wider uppercase">🔥 내면의 불꽃</h3>
                                 <p className="text-zinc-300 leading-relaxed text-lg font-light">{analysis?.deepAnalysis?.desires}</p>
                             </div>
                         )}
+                        {analysis?.deepAnalysis?.shadowSelf && (
+                            <div className="pt-6 border-t border-zinc-800/50">
+                                <h3 className="text-sm font-medium text-purple-400 mb-3 tracking-wider uppercase">🌑 그림자 자아</h3>
+                                <p className="text-zinc-300 leading-relaxed text-lg font-light">{analysis?.deepAnalysis?.shadowSelf}</p>
+                            </div>
+                        )}
+                        {analysis?.deepAnalysis?.coreWound && (
+                            <div>
+                                <h3 className="text-sm font-medium text-purple-400 mb-3 tracking-wider uppercase">💔 핵심 상처</h3>
+                                <p className="text-zinc-300 leading-relaxed text-lg font-light">{analysis?.deepAnalysis?.coreWound}</p>
+                            </div>
+                        )}
+                        {analysis?.deepAnalysis?.hiddenStrength && (
+                            <div>
+                                <h3 className="text-sm font-medium text-purple-400 mb-3 tracking-wider uppercase">💎 숨겨진 강점</h3>
+                                <p className="text-zinc-300 leading-relaxed text-lg font-light">{analysis?.deepAnalysis?.hiddenStrength}</p>
+                            </div>
+                        )}
+                        {analysis?.deepAnalysis?.lifePath && (
+                            <div>
+                                <h3 className="text-sm font-medium text-purple-400 mb-3 tracking-wider uppercase">🛤️ 인생 경로</h3>
+                                <p className="text-zinc-300 leading-relaxed text-lg font-light">{analysis?.deepAnalysis?.lifePath}</p>
+                            </div>
+                        )}
+                        {analysis?.deepAnalysis?.actionGuide && (
+                            <div className="bg-purple-500/5 p-6 rounded-xl border border-purple-500/10">
+                                <h3 className="text-sm font-medium text-purple-400 mb-3 tracking-wider uppercase">✨ 오늘의 미션</h3>
+                                <p className="text-zinc-300 leading-relaxed text-lg font-light whitespace-pre-line">{analysis?.deepAnalysis?.actionGuide}</p>
+                            </div>
+                        )}
                         <div className="pt-8 border-t border-zinc-800">
-                            <h3 className="text-sm font-medium text-purple-400 mb-4 tracking-wider uppercase">나를 위한 조언</h3>
-                            <p className="text-white leading-relaxed text-lg italic bg-purple-500/5 p-6 rounded-xl border border-purple-500/10">
+                            <h3 className="text-sm font-medium text-purple-400 mb-4 tracking-wider uppercase">💌 당신에게 보내는 편지</h3>
+                            <p className="text-white leading-relaxed text-lg italic bg-gradient-to-br from-purple-500/10 to-pink-500/5 p-6 rounded-xl border border-purple-500/20">
                                 {analysis?.deepAnalysis?.summary}
                             </p>
                         </div>

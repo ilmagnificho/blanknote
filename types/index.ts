@@ -70,6 +70,11 @@ export interface AnalysisResult {
     relationships: string;
     trauma: string;
     desires?: string;
+    shadowSelf?: string;
+    coreWound?: string;
+    hiddenStrength?: string;
+    lifePath?: string;
+    actionGuide?: string;
     summary: string;
   };
 
