@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import type { Result, IntroAnalysisResult } from "@/types";
 import { useTestStore } from "@/store/test-store";
+import { normalizeText, normalizeArray } from "@/lib/normalize";
 
 interface TeaserClientProps {
     result: Result;
@@ -17,13 +18,7 @@ export function TeaserClient({ result }: TeaserClientProps) {
     const analysis = result.intro_analysis as IntroAnalysisResult;
 
     // keywords가 객체({1: 'a', 2: 'b'})로 저장된 경우 배열로 변환
-    const toStringArray = (val: unknown): string[] => {
-        if (!val) return [];
-        if (Array.isArray(val)) return val.map(v => String(v));
-        if (typeof val === 'object') return Object.values(val).map(v => String(v));
-        return [];
-    };
-    const keywords = toStringArray(analysis?.keywords);
+    const keywords = normalizeArray(analysis?.keywords);
 
     // 인트로 애니메이션 상태 (true: 인트로 실행 중, false: 결과 표시)
     const [showResult, setShowResult] = useState(false);
@@ -154,14 +149,11 @@ function TeaserContent({
     analysis: IntroAnalysisResult,
     onStartDeep: () => void
 }) {
-    // keywords가 객체({1: 'a', 2: 'b'})로 저장된 경우 배열로 변환
-    const toStringArray = (val: unknown): string[] => {
-        if (!val) return [];
-        if (Array.isArray(val)) return val.map(v => String(v));
-        if (typeof val === 'object') return Object.values(val).map(v => String(v));
-        return [];
-    };
-    const keywords = toStringArray(analysis?.keywords);
+    // 객체 형태로 저장된 분석 데이터 정규화
+    const keywords = normalizeArray(analysis?.keywords);
+    const typeLabel = normalizeText(analysis?.typeLabel);
+    const oneLiner = normalizeText(analysis?.oneLiner);
+    const teaser = normalizeText(analysis?.teaser);
 
     return (
         <div className="pb-20">
@@ -187,7 +179,7 @@ function TeaserContent({
                         <h1 className="text-3xl md:text-4xl font-light text-white mb-4 leading-tight">
                             당신의 무의식 유형은<br />
                             <span className="font-serif italic text-transparent bg-clip-text bg-gradient-to-r from-purple-300 to-pink-300">
-                                {analysis?.typeLabel}
+                                {typeLabel}
                             </span>
                         </h1>
 
@@ -201,7 +193,7 @@ function TeaserContent({
                         <div className="max-w-xl mx-auto p-1 rounded-2xl bg-gradient-to-b from-white/10 to-transparent">
                             <div className="bg-zinc-900/90 backdrop-blur-sm p-8 rounded-xl border border-white/5 shadow-2xl">
                                 <p className="text-xl text-zinc-300 font-serif leading-relaxed">
-                                    &ldquo;{analysis?.oneLiner}&rdquo;
+                                    &ldquo;{oneLiner}&rdquo;
                                 </p>
                             </div>
                         </div>
@@ -254,7 +246,7 @@ function TeaserContent({
                                     분석 결과가 도착했습니다
                                 </h3>
                                 <p className="text-zinc-400 text-sm mb-6">
-                                    {analysis?.teaser || "이곳에는 당신조차 몰랐던 진실이 숨겨져 있습니다."}
+                                    {teaser || "이곳에는 당신조차 몰랐던 진실이 숨겨져 있습니다."}
                                 </p>
 
                                 <button

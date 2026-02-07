@@ -8,6 +8,7 @@ import { KeywordTags } from "@/components/result/keyword-tags";
 import { ShareButton } from "@/components/result/share-button";
 import type { Result, AnalysisResult } from "@/types";
 import { PRICING } from "@/types";
+import { normalizeText, normalizeArray } from "@/lib/normalize";
 
 interface ResultClientProps {
     result: Result;
@@ -17,13 +18,22 @@ export function ResultClient({ result }: ResultClientProps) {
     const analysis = result.analysis_text as AnalysisResult;
     const isPaid = result.is_paid;
 
-    // keywords가 객체({1: 'a', 2: 'b'})로 저장된 경우 배열로 변환
-    const toArray = (val: unknown): string[] => {
-        if (Array.isArray(val)) return val;
-        if (val && typeof val === 'object') return Object.values(val) as string[];
-        return [];
-    };
-    const keywords = toArray(analysis?.keywords);
+    // 객체 형태로 저장된 분석 데이터 정규화
+    const keywords = normalizeArray(analysis?.keywords);
+    const typeLabel = normalizeText(analysis?.typeLabel);
+    const oneLiner = normalizeText(analysis?.oneLiner);
+
+    // deepAnalysis 필드 정규화
+    const selfImage = normalizeText(analysis?.deepAnalysis?.selfImage);
+    const relationships = normalizeText(analysis?.deepAnalysis?.relationships);
+    const trauma = normalizeText(analysis?.deepAnalysis?.trauma);
+    const desires = normalizeText(analysis?.deepAnalysis?.desires);
+    const shadowSelf = normalizeText(analysis?.deepAnalysis?.shadowSelf);
+    const coreWound = normalizeText(analysis?.deepAnalysis?.coreWound);
+    const hiddenStrength = normalizeText(analysis?.deepAnalysis?.hiddenStrength);
+    const lifePath = normalizeText(analysis?.deepAnalysis?.lifePath);
+    const actionGuide = normalizeText(analysis?.deepAnalysis?.actionGuide);
+    const summary = normalizeText(analysis?.deepAnalysis?.summary);
 
     const [isGenerating, setIsGenerating] = useState(false);
     const [showStickyButton, setShowStickyButton] = useState(false);
@@ -183,7 +193,7 @@ export function ResultClient({ result }: ResultClientProps) {
             </motion.div>
 
             {/* 유형 라벨 */}
-            {analysis?.typeLabel && (
+            {typeLabel && (
                 <motion.div
                     initial={{ opacity: 0, scale: 0.9 }}
                     animate={{ opacity: 1, scale: 1 }}
@@ -194,7 +204,7 @@ export function ResultClient({ result }: ResultClientProps) {
                         <div className="absolute inset-0 bg-purple-500/20 blur-xl rounded-full"></div>
                         <span className="relative inline-block px-8 py-4 bg-zinc-900/80 border border-purple-500/30 rounded-full backdrop-blur-sm">
                             <span className="text-2xl font-medium text-transparent bg-clip-text bg-gradient-to-r from-purple-300 via-pink-300 to-purple-300 animate-pulse">
-                                {analysis.typeLabel}
+                                {typeLabel}
                             </span>
                         </span>
                     </div>
@@ -216,7 +226,7 @@ export function ResultClient({ result }: ResultClientProps) {
                 <div className="p-8 bg-zinc-900/30 border border-zinc-800 rounded-2xl text-center relative overflow-hidden">
                     <div className="absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-transparent via-purple-500/50 to-transparent opacity-50"></div>
                     <p className="text-xl md:text-2xl text-zinc-200 font-serif leading-relaxed italic">
-                        &ldquo;{analysis?.oneLiner}&rdquo;
+                        &ldquo;{oneLiner}&rdquo;
                     </p>
                 </div>
             </motion.div>
@@ -288,56 +298,56 @@ export function ResultClient({ result }: ResultClientProps) {
                     <div className="p-8 bg-zinc-900/50 border border-zinc-800 rounded-2xl space-y-8 backdrop-blur-sm">
                         <div>
                             <h3 className="text-sm font-medium text-purple-400 mb-3 tracking-wider uppercase">🪞 거울의 방</h3>
-                            <p className="text-zinc-300 leading-relaxed text-lg font-light">{analysis?.deepAnalysis?.selfImage}</p>
+                            <p className="text-zinc-300 leading-relaxed text-lg font-light">{selfImage}</p>
                         </div>
                         <div>
                             <h3 className="text-sm font-medium text-purple-400 mb-3 tracking-wider uppercase">⭐ 관계의 별자리</h3>
-                            <p className="text-zinc-300 leading-relaxed text-lg font-light">{analysis?.deepAnalysis?.relationships}</p>
+                            <p className="text-zinc-300 leading-relaxed text-lg font-light">{relationships}</p>
                         </div>
                         <div>
                             <h3 className="text-sm font-medium text-purple-400 mb-3 tracking-wider uppercase">🔮 기억의 조각들</h3>
-                            <p className="text-zinc-300 leading-relaxed text-lg font-light">{analysis?.deepAnalysis?.trauma}</p>
+                            <p className="text-zinc-300 leading-relaxed text-lg font-light">{trauma}</p>
                         </div>
-                        {analysis?.deepAnalysis?.desires && (
+                        {desires && (
                             <div>
                                 <h3 className="text-sm font-medium text-purple-400 mb-3 tracking-wider uppercase">🔥 내면의 불꽃</h3>
-                                <p className="text-zinc-300 leading-relaxed text-lg font-light">{analysis?.deepAnalysis?.desires}</p>
+                                <p className="text-zinc-300 leading-relaxed text-lg font-light">{desires}</p>
                             </div>
                         )}
-                        {analysis?.deepAnalysis?.shadowSelf && (
+                        {shadowSelf && (
                             <div className="pt-6 border-t border-zinc-800/50">
                                 <h3 className="text-sm font-medium text-purple-400 mb-3 tracking-wider uppercase">🌑 그림자 자아</h3>
-                                <p className="text-zinc-300 leading-relaxed text-lg font-light">{analysis?.deepAnalysis?.shadowSelf}</p>
+                                <p className="text-zinc-300 leading-relaxed text-lg font-light">{shadowSelf}</p>
                             </div>
                         )}
-                        {analysis?.deepAnalysis?.coreWound && (
+                        {coreWound && (
                             <div>
                                 <h3 className="text-sm font-medium text-purple-400 mb-3 tracking-wider uppercase">💔 핵심 상처</h3>
-                                <p className="text-zinc-300 leading-relaxed text-lg font-light">{analysis?.deepAnalysis?.coreWound}</p>
+                                <p className="text-zinc-300 leading-relaxed text-lg font-light">{coreWound}</p>
                             </div>
                         )}
-                        {analysis?.deepAnalysis?.hiddenStrength && (
+                        {hiddenStrength && (
                             <div>
                                 <h3 className="text-sm font-medium text-purple-400 mb-3 tracking-wider uppercase">💎 숨겨진 강점</h3>
-                                <p className="text-zinc-300 leading-relaxed text-lg font-light">{analysis?.deepAnalysis?.hiddenStrength}</p>
+                                <p className="text-zinc-300 leading-relaxed text-lg font-light">{hiddenStrength}</p>
                             </div>
                         )}
-                        {analysis?.deepAnalysis?.lifePath && (
+                        {lifePath && (
                             <div>
                                 <h3 className="text-sm font-medium text-purple-400 mb-3 tracking-wider uppercase">🛤️ 인생 경로</h3>
-                                <p className="text-zinc-300 leading-relaxed text-lg font-light">{analysis?.deepAnalysis?.lifePath}</p>
+                                <p className="text-zinc-300 leading-relaxed text-lg font-light">{lifePath}</p>
                             </div>
                         )}
-                        {analysis?.deepAnalysis?.actionGuide && (
+                        {actionGuide && (
                             <div className="bg-purple-500/5 p-6 rounded-xl border border-purple-500/10">
                                 <h3 className="text-sm font-medium text-purple-400 mb-3 tracking-wider uppercase">✨ 오늘의 미션</h3>
-                                <p className="text-zinc-300 leading-relaxed text-lg font-light whitespace-pre-line">{analysis?.deepAnalysis?.actionGuide}</p>
+                                <p className="text-zinc-300 leading-relaxed text-lg font-light whitespace-pre-line">{actionGuide}</p>
                             </div>
                         )}
                         <div className="pt-8 border-t border-zinc-800">
                             <h3 className="text-sm font-medium text-purple-400 mb-4 tracking-wider uppercase">💌 당신에게 보내는 편지</h3>
                             <p className="text-white leading-relaxed text-lg italic bg-gradient-to-br from-purple-500/10 to-pink-500/5 p-6 rounded-xl border border-purple-500/20">
-                                {analysis?.deepAnalysis?.summary}
+                                {summary}
                             </p>
                         </div>
                     </div>
@@ -450,7 +460,7 @@ export function ResultClient({ result }: ResultClientProps) {
             >
                 <ShareButton
                     keywords={keywords}
-                    oneLiner={analysis?.oneLiner || ""}
+                    oneLiner={oneLiner}
                 />
             </motion.div>
 
