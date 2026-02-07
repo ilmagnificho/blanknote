@@ -37,12 +37,14 @@ export function TeaserClient({ result }: TeaserClientProps) {
             <motion.div
                 initial={{ opacity: 0, y: -20 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="text-center mb-8"
+                className="text-center mb-12"
             >
-                <h2 className="text-2xl md:text-3xl font-medium text-white mb-2">
-                    당신의 무의식이 말합니다
+                <h2 className="text-2xl md:text-3xl font-medium text-white mb-3">
+                    무의식의 첫 번째 신호
                 </h2>
-                <p className="text-zinc-500">5개의 답변으로 발견한 초기 인사이트</p>
+                <p className="text-zinc-500 font-light">
+                    내면 깊은 곳에서 희미한 신호가 잡혔습니다.
+                </p>
             </motion.div>
 
             {/* 유형 라벨 */}
@@ -50,13 +52,16 @@ export function TeaserClient({ result }: TeaserClientProps) {
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ delay: 0.2 }}
-                className="text-center mb-8"
+                className="text-center mb-10"
             >
-                <span className="inline-block px-6 py-3 bg-gradient-to-r from-purple-500/20 to-pink-500/20 border border-purple-500/30 rounded-full">
-                    <span className="text-xl font-medium text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400">
-                        {analysis?.typeLabel || "분석 중..."}
+                <div className="inline-block relative">
+                    <div className="absolute inset-0 bg-purple-500/20 blur-xl rounded-full"></div>
+                    <span className="relative inline-block px-8 py-4 bg-zinc-900/80 border border-purple-500/30 rounded-full backdrop-blur-sm">
+                        <span className="text-2xl font-medium text-transparent bg-clip-text bg-gradient-to-r from-purple-300 via-pink-300 to-purple-300 animate-pulse">
+                            {analysis?.typeLabel || "신호 분석 중..."}
+                        </span>
                     </span>
-                </span>
+                </div>
             </motion.div>
 
             {/* 키워드 태그 */}
@@ -64,12 +69,12 @@ export function TeaserClient({ result }: TeaserClientProps) {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.4 }}
-                className="flex flex-wrap justify-center gap-3 mb-8"
+                className="flex flex-wrap justify-center gap-3 mb-12"
             >
                 {analysis?.keywords.map((keyword, i) => (
                     <span
                         key={i}
-                        className="px-4 py-2 bg-zinc-900 border border-zinc-700 rounded-full text-zinc-300 text-sm"
+                        className="px-4 py-2 bg-zinc-900 border border-zinc-700 rounded-full text-zinc-400 text-sm font-light tracking-wide"
                     >
                         {keyword}
                     </span>
@@ -81,10 +86,11 @@ export function TeaserClient({ result }: TeaserClientProps) {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.6 }}
-                className="max-w-lg mx-auto mb-8"
+                className="max-w-lg mx-auto mb-16"
             >
-                <div className="p-6 bg-zinc-900 border border-zinc-800 rounded-2xl text-center">
-                    <p className="text-lg md:text-xl text-white font-medium leading-relaxed">
+                <div className="p-8 bg-zinc-900/30 border border-zinc-800 rounded-2xl text-center relative overflow-hidden group">
+                    <div className="absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-transparent via-purple-500/50 to-transparent opacity-50"></div>
+                    <p className="text-xl md:text-2xl text-zinc-200 font-serif leading-relaxed italic">
                         &ldquo;{analysis?.oneLiner}&rdquo;
                     </p>
                 </div>
@@ -95,41 +101,40 @@ export function TeaserClient({ result }: TeaserClientProps) {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.8 }}
-                className="max-w-lg mx-auto mb-10"
+                className="max-w-lg mx-auto mb-12"
             >
-                <div className="p-6 bg-zinc-900/50 border border-zinc-800 rounded-2xl overflow-hidden relative">
-                    {/* 블러된 가짜 분석 내용 */}
-                    <div className="blur-md pointer-events-none select-none space-y-4">
-                        <div>
-                            <h3 className="text-sm text-zinc-500 mb-2">자아 이미지</h3>
-                            <p className="text-zinc-400">
-                                당신의 답변에서 발견된 자아상은 완벽주의적 경향과
-                                숨겨진 불안감 사이의 긴장을 보여줍니다...
-                            </p>
+                <div className="relative p-1 rounded-2xl bg-gradient-to-b from-zinc-800 to-transparent">
+                    <div className="p-6 bg-black rounded-xl overflow-hidden relative">
+                        {/* 블러된 가짜 분석 내용 */}
+                        <div className="blur-sm opacity-50 pointer-events-none select-none space-y-6">
+                            <div>
+                                <h3 className="text-sm text-purple-400/50 mb-2">자아 이미지</h3>
+                                <p className="text-zinc-600 leading-relaxed">
+                                    당신이 인지하지 못했던 내면의 거울에는...
+                                </p>
+                            </div>
+                            <div>
+                                <h3 className="text-sm text-purple-400/50 mb-2">숨겨진 상처</h3>
+                                <p className="text-zinc-600 leading-relaxed">
+                                    오랜 시간 덮어두었던 기억의 조각들이...
+                                </p>
+                            </div>
+                            <div>
+                                <h3 className="text-sm text-purple-400/50 mb-2">진정한 욕구</h3>
+                                <p className="text-zinc-600 leading-relaxed">
+                                    당신이 진정으로 갈망하고 있는 것은 사실...
+                                </p>
+                            </div>
                         </div>
-                        <div>
-                            <h3 className="text-sm text-zinc-500 mb-2">대인관계 패턴</h3>
-                            <p className="text-zinc-400">
-                                관계에서 보이는 방어적 태도는 과거의 경험에서
-                                형성된 보호 메커니즘으로 해석됩니다...
-                            </p>
-                        </div>
-                        <div>
-                            <h3 className="text-sm text-zinc-500 mb-2">숨겨진 상처</h3>
-                            <p className="text-zinc-400">
-                                표면 아래에 억압된 감정들이 존재하며, 이는 특정
-                                상황에서 예상치 못한 반응으로 나타날 수 있습니다...
-                            </p>
-                        </div>
-                    </div>
 
-                    {/* 잠금 오버레이 */}
-                    <div className="absolute inset-0 flex flex-col items-center justify-center bg-gradient-to-t from-black/90 via-black/60 to-transparent">
-                        <span className="text-4xl mb-3">🔒</span>
-                        <p className="text-white font-medium mb-1">심층 분석 잠금</p>
-                        <p className="text-zinc-400 text-sm text-center px-4">
-                            {analysis?.teaser || "더 깊은 분석을 위해 추가 질문에 답해주세요"}
-                        </p>
+                        {/* 잠금 오버레이 */}
+                        <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/60 backdrop-blur-[2px]">
+                            <span className="text-4xl mb-4 drop-shadow-lg">🔒</span>
+                            <p className="text-white font-medium mb-2 text-lg">심연의 문이 닫혀있습니다</p>
+                            <p className="text-zinc-400 text-sm text-center px-6 leading-relaxed">
+                                {analysis?.teaser || "이곳에는 당신조차 몰랐던 진실이 숨겨져 있습니다."}
+                            </p>
+                        </div>
                     </div>
                 </div>
             </motion.div>
@@ -139,19 +144,21 @@ export function TeaserClient({ result }: TeaserClientProps) {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 1.0 }}
-                className="text-center space-y-4"
+                className="text-center space-y-6"
             >
-                <button
-                    onClick={handleStartDeep}
-                    className="w-full max-w-xs mx-auto block px-8 py-4 
-                        bg-gradient-to-r from-purple-500 to-pink-500 
-                        text-white font-medium rounded-full
-                        hover:opacity-90 transition-opacity"
-                >
-                    🔓 심층 분석 시작하기
-                </button>
-                <p className="text-zinc-600 text-sm">
-                    7개의 추가 질문 • 약 3분 소요
+                <div className="relative group cursor-pointer" onClick={handleStartDeep}>
+                    <div className="absolute -inset-1 bg-gradient-to-r from-purple-600 to-pink-600 rounded-full blur opacity-30 group-hover:opacity-60 transition duration-1000 group-hover:duration-200"></div>
+                    <button
+                        className="relative w-full max-w-xs mx-auto block px-8 py-5 
+                            bg-zinc-900 ring-1 ring-white/10
+                            text-white font-medium rounded-full
+                            group-hover:bg-zinc-800 transition-all text-lg tracking-wide"
+                    >
+                        🗝️ 더 깊은 진실 마주하기
+                    </button>
+                </div>
+                <p className="text-zinc-500 text-xs tracking-widest uppercase">
+                    7 Questions • Deep Analysis
                 </p>
             </motion.div>
 
