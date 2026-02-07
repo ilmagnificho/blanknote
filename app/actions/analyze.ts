@@ -257,7 +257,27 @@ export async function getResult(resultId: string): Promise<Result | null> {
             return null;
         }
 
-        return data as Result;
+        // keywords가 객체({1: 'a', 2: 'b'})로 저장된 경우 배열로 변환
+        const toArray = (val: unknown): string[] => {
+            if (!val) return [];
+            if (Array.isArray(val)) return val;
+            if (typeof val === 'object') return Object.values(val) as string[];
+            return [];
+        };
+
+        const result = data as Result;
+
+        // analysis_text.keywords 변환
+        if (result.analysis_text?.keywords) {
+            result.analysis_text.keywords = toArray(result.analysis_text.keywords);
+        }
+
+        // intro_analysis.keywords 변환
+        if (result.intro_analysis?.keywords) {
+            result.intro_analysis.keywords = toArray(result.intro_analysis.keywords);
+        }
+
+        return result;
     } catch {
         return null;
     }
@@ -283,7 +303,20 @@ export async function getIntroResult(resultId: string): Promise<{
             return null;
         }
 
-        return data as { id: string; intro_analysis: IntroAnalysisResult };
+        // keywords가 객체로 저장된 경우 배열로 변환
+        const toArray = (val: unknown): string[] => {
+            if (!val) return [];
+            if (Array.isArray(val)) return val;
+            if (typeof val === 'object') return Object.values(val) as string[];
+            return [];
+        };
+
+        const result = data as { id: string; intro_analysis: IntroAnalysisResult };
+        if (result.intro_analysis?.keywords) {
+            result.intro_analysis.keywords = toArray(result.intro_analysis.keywords);
+        }
+
+        return result;
     } catch {
         return null;
     }
