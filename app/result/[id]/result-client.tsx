@@ -20,6 +20,26 @@ export function ResultClient({ result }: ResultClientProps) {
     const [isGenerating, setIsGenerating] = useState(false);
     const router = useRouter();
 
+    // 이미지 다운로드 핸들러
+    const handleDownload = async () => {
+        if (!result.image_url) return;
+        try {
+            const response = await fetch(result.image_url);
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = `blanknote-${result.id.slice(0, 8)}.png`;
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
+            document.body.removeChild(a);
+        } catch (e) {
+            console.error(e);
+            alert("이미지 다운로드에 실패했습니다.");
+        }
+    };
+
     // 결제 핸들러 (현재: 개발용 우회 - 즉시 이미지 생성)
     const handlePayment = async () => {
         if (!confirm("결제를 진행하시겠습니까? (현재 개발 모드로 무료 진행됩니다)")) return;
@@ -116,7 +136,7 @@ export function ResultClient({ result }: ResultClientProps) {
                     transition={{ delay: 0.5 }}
                     className="max-w-lg mx-auto mb-12"
                 >
-                    <div className="rounded-2xl overflow-hidden relative aspect-square bg-zinc-900 border border-zinc-800 flex items-center justify-center group">
+                    <div className="rounded-2xl overflow-hidden relative aspect-square bg-zinc-900 border border-zinc-800 flex items-center justify-center group mb-4 shadow-2xl shadow-purple-900/20">
                         {result.image_url ? (
                             <>
                                 <img
@@ -136,6 +156,23 @@ export function ResultClient({ result }: ResultClientProps) {
                             </div>
                         )}
                     </div>
+
+                    {/* 다운로드 버튼 */}
+                    {result.image_url && (
+                        <div className="text-center">
+                            <button
+                                onClick={handleDownload}
+                                className="inline-flex items-center gap-2 px-6 py-2.5 bg-zinc-900 border border-zinc-700 rounded-full text-zinc-300 text-sm hover:bg-zinc-800 hover:text-white transition-all hover:border-zinc-500"
+                            >
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                    <polyline points="7 10 12 15 17 10"></polyline>
+                                    <line x1="12" y1="15" x2="12" y2="3"></line>
+                                </svg>
+                                이미지 소장하기
+                            </button>
+                        </div>
+                    )}
                 </motion.div>
             )}
 
@@ -175,34 +212,48 @@ export function ResultClient({ result }: ResultClientProps) {
                         </div>
                     </div>
                 ) : (
-                    // 무료 - 블러 처리
-                    <div className="relative p-1 rounded-2xl bg-gradient-to-b from-zinc-800 to-transparent">
-                        <div className="p-6 bg-black rounded-xl overflow-hidden relative">
-                            <div className="blur-sm opacity-50 pointer-events-none select-none space-y-6">
-                                <div>
-                                    <h3 className="text-sm text-purple-400/50 mb-2">자아 이미지</h3>
-                                    <p className="text-zinc-600 leading-relaxed">
-                                        스스로를 바라보는 당신의 시선에는...
+                    // 무료 - 블러 처리 (Paywall 강화)
+                    <div className="relative p-1 rounded-2xl bg-gradient-to-b from-purple-900/30 to-zinc-900/30">
+                        <div className="p-8 bg-black rounded-xl overflow-hidden relative border border-zinc-800">
+                            {/* 헤드라인 */}
+                            <div className="mb-8 text-center relative z-10">
+                                <span className="text-purple-400 text-xs font-mono tracking-widest uppercase mb-2 block">Premium Analysis</span>
+                                <h3 className="text-xl md:text-2xl text-white font-serif italic">
+                                    &ldquo;무의식이 당신에게 보내는<br />3가지 핵심 시그널&rdquo;
+                                </h3>
+                            </div>
+
+                            {/* 블러된 리스트 */}
+                            <div className="space-y-6 blur-[6px] opacity-40 select-none pointer-events-none grayscale-[50%]">
+                                <div className="border-l-2 border-purple-500/30 pl-4">
+                                    <h4 className="text-sm text-purple-300 mb-1">Mirror Image</h4>
+                                    <p className="text-zinc-400 text-sm leading-relaxed">
+                                        당신이 스스로를 정의하는 방식에는 큰 모순이 있습니다. 겉으로는 강해보이지만 내면에는...
                                     </p>
                                 </div>
-                                <div>
-                                    <h3 className="text-sm text-purple-400/50 mb-2">대인관계 패턴</h3>
-                                    <p className="text-zinc-600 leading-relaxed">
-                                        타인과의 거리두기 방식에서 발견된...
+                                <div className="border-l-2 border-purple-500/30 pl-4">
+                                    <h4 className="text-sm text-purple-300 mb-1">Emotional Echo</h4>
+                                    <p className="text-zinc-400 text-sm leading-relaxed">
+                                        반복되는 대인관계의 패턴은 어린 시절의 특정 기억과 깊게 연관되어 있으며, 이것이 해결되지 않으면...
                                     </p>
                                 </div>
-                                <div>
-                                    <h3 className="text-sm text-purple-400/50 mb-2">숨겨진 상처</h3>
-                                    <p className="text-zinc-600 leading-relaxed">
-                                        아직 치유되지 않은 과거의 기억이...
+                                <div className="border-l-2 border-purple-500/30 pl-4">
+                                    <h4 className="text-sm text-purple-300 mb-1">Hidden Shadow</h4>
+                                    <p className="text-zinc-400 text-sm leading-relaxed">
+                                        가장 감추고 싶어하는 당신의 그림자는 사실 당신의 가장 큰 잠재력을 품고 있는...
                                     </p>
                                 </div>
                             </div>
-                            <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/60 backdrop-blur-[2px]">
-                                <span className="text-4xl mb-4 drop-shadow-lg">🔒</span>
-                                <p className="text-white font-medium mb-2 text-lg">진실의 문이 닫혀있습니다</p>
-                                <p className="text-zinc-400 text-sm text-center px-6 leading-relaxed">
-                                    단 한 번의 선택으로, 당신의 내면을 온전히 마주하세요.
+
+                            {/* 잠금 오버레이 */}
+                            <div className="absolute inset-0 flex flex-col items-center justify-center bg-gradient-to-t from-black via-black/80 to-transparent z-20">
+                                <div className="bg-zinc-900/90 p-4 rounded-full border border-purple-500/30 mb-4 shadow-[0_0_30px_rgba(168,85,247,0.15)] animate-pulse">
+                                    <span className="text-3xl">🔒</span>
+                                </div>
+                                <p className="text-white font-medium mb-2 text-lg">분석 결과가 도착했습니다</p>
+                                <p className="text-zinc-400 text-sm text-center px-6 leading-relaxed max-w-xs mb-6">
+                                    지금, 당신의 내면 깊은 곳에 숨겨진<br />
+                                    <span className="text-purple-400">진실된 이야기</span>를 마주하세요.
                                 </p>
                             </div>
                         </div>

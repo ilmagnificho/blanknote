@@ -110,6 +110,7 @@ export const useTestStore = create<TestState>()(
                 set({
                     phase: "deep",
                     currentQuestionIndex: 0,
+                    deepAnswers: createInitialAnswers(DEEP_QUESTIONS),
                 });
             },
 
