@@ -2,7 +2,7 @@
 // OpenAI API 클라이언트
 
 import OpenAI from "openai";
-import type { AnalysisResult, SCTAnswer } from "@/types";
+import type { AnalysisResult, IntroAnalysisResult, SCTAnswer } from "@/types";
 
 // OpenAI 클라이언트 인스턴스 (lazy 초기화)
 let openaiInstance: OpenAI | null = null;
@@ -17,14 +17,31 @@ function getOpenAI(): OpenAI {
 }
 
 /**
- * 심리 분석 시스템 프롬프트
- * 프로이트 + 셜록 홈즈 스타일의 냉철한 심리학자
+ * Intro 분석 시스템 프롬프트 (티저용 - 간단한 분석)
  */
-const SYSTEM_PROMPT = `당신은 프로이트의 통찰력과 셜록 홈즈의 관찰력을 가진 냉철한 심리학자입니다.
+const INTRO_SYSTEM_PROMPT = `당신은 프로이트의 통찰력을 가진 심리학자입니다.
+
+## 역할
+- 5개의 짧은 문장완성검사(SCT) 답변을 분석합니다.
+- 정곡을 찌르는(Insightful) 톤으로 응답하세요.
+- 한국어로 응답하세요.
+
+## 출력 형식 (JSON)
+{
+  "keywords": ["#키워드1", "#키워드2", "#키워드3"],
+  "oneLiner": "뼈를 때리는 한 줄 분석 (20자 내외)",
+  "typeLabel": "심리 유형 라벨 (예: 회피형 완벽주의자)",
+  "teaser": "더 깊은 분석이 필요한 이유 (2문장, 호기심 유발)"
+}`;
+
+/**
+ * Deep 분석 시스템 프롬프트 (전체 분석)
+ */
+const DEEP_SYSTEM_PROMPT = `당신은 프로이트의 통찰력과 셜록 홈즈의 관찰력을 가진 냉철한 심리학자입니다.
 
 ## 역할 및 톤
 - 따뜻한 위로보다는 **정곡을 찌르는(Insightful)** 톤을 유지하세요.
-- ingan.ai처럼 약간은 시니컬하고 유머러스한 "팩트 폭력" 스타일을 구사하세요.
+- 약간은 시니컬하고 유머러스한 "팩트 폭력" 스타일을 구사하세요.
 - 사용자의 답변에서 논리적 모순이나 반복되는 단어를 찾아내어 근거로 제시하세요.
 - 한국어로 응답하세요.
 
@@ -35,29 +52,26 @@ const SYSTEM_PROMPT = `당신은 프로이트의 통찰력과 셜록 홈즈의 �
 4. 회피하거나 짧게 답한 문항은 특히 중요한 단서입니다.
 
 ## 출력 형식 (JSON)
-반드시 아래 JSON 형식으로만 응답하세요. 다른 텍스트는 포함하지 마세요.
-
 {
   "keywords": ["#키워드1", "#키워드2", "#키워드3"],
-  "oneLiner": "뼈를 때리는 한 줄 분석 (팩트 폭력)",
+  "oneLiner": "뼈를 때리는 한 줄 분석",
+  "typeLabel": "심리 유형 라벨",
   "deepAnalysis": {
-    "selfImage": "자아 이미지 분석 (2-3문장)",
-    "relationships": "대인관계 패턴 분석 (2-3문장)",
-    "trauma": "숨겨진 상처/트라우마 분석 (2-3문장)",
-    "summary": "종합 심리 분석 (3-4문장)"
+    "selfImage": "자아 이미지 분석 (3-4문장)",
+    "relationships": "대인관계 패턴 분석 (3-4문장)",
+    "trauma": "숨겨진 상처/트라우마 분석 (3-4문장)",
+    "desires": "숨겨진 욕구 분석 (2-3문장)",
+    "summary": "종합 심리 분석 (4-5문장)"
   },
   "imagePrompt": "DALL-E 3를 위한 무의식 시각화 프롬프트 (영어, 추상적이고 몽환적인 스타일)"
 }`;
 
 /**
- * SCT 답변을 분석하여 심리 분석 결과 생성
- * @param answers - 사용자가 입력한 SCT 답변 배열
- * @returns 분석 결과 객체
+ * Intro 답변 분석 (티저 생성)
  */
-export async function analyzeSCTAnswers(
+export async function analyzeIntroAnswers(
     answers: SCTAnswer[]
-): Promise<AnalysisResult> {
-    // 사용자 입력을 문자열로 변환
+): Promise<IntroAnalysisResult> {
     const userInput = answers
         .map((a) => `"${a.prompt}" → "${a.answer}"`)
         .join("\n");
@@ -65,15 +79,15 @@ export async function analyzeSCTAnswers(
     const response = await getOpenAI().chat.completions.create({
         model: "gpt-4o",
         messages: [
-            { role: "system", content: SYSTEM_PROMPT },
+            { role: "system", content: INTRO_SYSTEM_PROMPT },
             {
                 role: "user",
-                content: `다음은 사용자의 문장완성검사(SCT) 답변입니다. 분석해주세요.\n\n${userInput}`,
+                content: `다음은 사용자의 문장완성검사(SCT) 답변입니다. 간단히 분석해주세요.\n\n${userInput}`,
             },
         ],
         response_format: { type: "json_object" },
-        temperature: 0.8, // 약간의 창의성 허용
-        max_tokens: 2000,
+        temperature: 0.8,
+        max_tokens: 500,
     });
 
     const content = response.choices[0].message.content;
@@ -81,19 +95,58 @@ export async function analyzeSCTAnswers(
         throw new Error("GPT-4o 응답이 비어있습니다.");
     }
 
-    const result = JSON.parse(content) as AnalysisResult;
-    return result;
+    return JSON.parse(content) as IntroAnalysisResult;
+}
+
+/**
+ * Deep 분석 (Intro + Deep 답변 모두 활용)
+ */
+export async function analyzeDeepAnswers(
+    introAnswers: SCTAnswer[],
+    deepAnswers: SCTAnswer[]
+): Promise<AnalysisResult> {
+    const allAnswers = [...introAnswers, ...deepAnswers];
+    const userInput = allAnswers
+        .map((a) => `"${a.prompt}" → "${a.answer}"`)
+        .join("\n");
+
+    const response = await getOpenAI().chat.completions.create({
+        model: "gpt-4o",
+        messages: [
+            { role: "system", content: DEEP_SYSTEM_PROMPT },
+            {
+                role: "user",
+                content: `다음은 사용자의 문장완성검사(SCT) 12문항 답변입니다. 깊이 있게 분석해주세요.\n\n${userInput}`,
+            },
+        ],
+        response_format: { type: "json_object" },
+        temperature: 0.8,
+        max_tokens: 2500,
+    });
+
+    const content = response.choices[0].message.content;
+    if (!content) {
+        throw new Error("GPT-4o 응답이 비어있습니다.");
+    }
+
+    return JSON.parse(content) as AnalysisResult;
+}
+
+/**
+ * 기존 호환용 (deprecated)
+ */
+export async function analyzeSCTAnswers(
+    answers: SCTAnswer[]
+): Promise<AnalysisResult> {
+    return analyzeDeepAnswers(answers.slice(0, 5), answers.slice(5));
 }
 
 /**
  * DALL-E 3를 사용하여 무의식 시각화 이미지 생성
- * @param imagePrompt - GPT-4o가 생성한 이미지 프롬프트
- * @returns 생성된 이미지 URL
  */
 export async function generateUnconsciousImage(
     imagePrompt: string
 ): Promise<string> {
-    // 스타일 가이드 추가
     const fullPrompt = `${imagePrompt}
 
 Style: Surrealist, dreamlike, abstract expressionism. 

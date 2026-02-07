@@ -1,17 +1,19 @@
 // store/test-store.ts
-// Zustand 상태 관리 - SCT 테스트 진행 상태
+// Zustand 상태 관리 - SCT 테스트 진행 상태 (2단계 퍼널)
 
 import { create } from "zustand";
-import type { SCTAnswer, SCTQuestion } from "@/types";
-import { SCT_QUESTIONS } from "@/types";
+import { persist } from "zustand/middleware";
+import type { SCTAnswer, SCTQuestion, TestPhase } from "@/types";
+import { INTRO_QUESTIONS, DEEP_QUESTIONS } from "@/types";
 
 interface TestState {
     // 상태
+    phase: TestPhase;
     currentQuestionIndex: number;
-    answers: SCTAnswer[];
+    introAnswers: SCTAnswer[];
+    deepAnswers: SCTAnswer[];
     isSubmitting: boolean;
-    isComplete: boolean;
-    resultId: string | null;
+    introResultId: string | null;
     error: string | null;
 
     // 액션
@@ -20,96 +22,152 @@ interface TestState {
     prevQuestion: () => void;
     goToQuestion: (index: number) => void;
     setSubmitting: (isSubmitting: boolean) => void;
-    setComplete: (resultId: string) => void;
+    setIntroComplete: (resultId: string) => void;
+    startDeepPhase: () => void;
     setError: (error: string | null) => void;
     reset: () => void;
 
     // Getters
+    getCurrentQuestions: () => SCTQuestion[];
     getCurrentQuestion: () => SCTQuestion;
+    getCurrentAnswers: () => SCTAnswer[];
     getProgress: () => number;
     isLastQuestion: () => boolean;
     canSubmit: () => boolean;
 }
 
-const initialState = {
-    currentQuestionIndex: 0,
-    answers: SCT_QUESTIONS.map((q) => ({
+const createInitialAnswers = (questions: SCTQuestion[]): SCTAnswer[] =>
+    questions.map((q) => ({
         questionId: q.id,
         prompt: q.prompt,
         answer: "",
-    })),
+    }));
+
+const initialState = {
+    phase: "intro" as TestPhase,
+    currentQuestionIndex: 0,
+    introAnswers: createInitialAnswers(INTRO_QUESTIONS),
+    deepAnswers: createInitialAnswers(DEEP_QUESTIONS),
     isSubmitting: false,
-    isComplete: false,
-    resultId: null,
+    introResultId: null,
     error: null,
 };
 
-export const useTestStore = create<TestState>((set, get) => ({
-    ...initialState,
+export const useTestStore = create<TestState>()(
+    persist(
+        (set, get) => ({
+            ...initialState,
 
-    setAnswer: (questionId: number, answer: string) => {
-        set((state) => ({
-            answers: state.answers.map((a) =>
-                a.questionId === questionId ? { ...a, answer } : a
-            ),
-        }));
-    },
+            setAnswer: (questionId: number, answer: string) => {
+                const { phase } = get();
+                if (phase === "intro") {
+                    set((state) => ({
+                        introAnswers: state.introAnswers.map((a) =>
+                            a.questionId === questionId ? { ...a, answer } : a
+                        ),
+                    }));
+                } else {
+                    set((state) => ({
+                        deepAnswers: state.deepAnswers.map((a) =>
+                            a.questionId === questionId ? { ...a, answer } : a
+                        ),
+                    }));
+                }
+            },
 
-    nextQuestion: () => {
-        set((state) => ({
-            currentQuestionIndex: Math.min(
-                state.currentQuestionIndex + 1,
-                SCT_QUESTIONS.length - 1
-            ),
-        }));
-    },
+            nextQuestion: () => {
+                const questions = get().getCurrentQuestions();
+                set((state) => ({
+                    currentQuestionIndex: Math.min(
+                        state.currentQuestionIndex + 1,
+                        questions.length - 1
+                    ),
+                }));
+            },
 
-    prevQuestion: () => {
-        set((state) => ({
-            currentQuestionIndex: Math.max(state.currentQuestionIndex - 1, 0),
-        }));
-    },
+            prevQuestion: () => {
+                set((state) => ({
+                    currentQuestionIndex: Math.max(state.currentQuestionIndex - 1, 0),
+                }));
+            },
 
-    goToQuestion: (index: number) => {
-        if (index >= 0 && index < SCT_QUESTIONS.length) {
-            set({ currentQuestionIndex: index });
+            goToQuestion: (index: number) => {
+                const questions = get().getCurrentQuestions();
+                if (index >= 0 && index < questions.length) {
+                    set({ currentQuestionIndex: index });
+                }
+            },
+
+            setSubmitting: (isSubmitting: boolean) => {
+                set({ isSubmitting, error: null });
+            },
+
+            setIntroComplete: (resultId: string) => {
+                set({ introResultId: resultId, isSubmitting: false });
+            },
+
+            startDeepPhase: () => {
+                set({
+                    phase: "deep",
+                    currentQuestionIndex: 0,
+                });
+            },
+
+            setError: (error: string | null) => {
+                set({ error, isSubmitting: false });
+            },
+
+            reset: () => {
+                set({
+                    ...initialState,
+                    introAnswers: createInitialAnswers(INTRO_QUESTIONS),
+                    deepAnswers: createInitialAnswers(DEEP_QUESTIONS),
+                });
+            },
+
+            getCurrentQuestions: () => {
+                const { phase } = get();
+                return phase === "intro" ? INTRO_QUESTIONS : DEEP_QUESTIONS;
+            },
+
+            getCurrentQuestion: () => {
+                const { currentQuestionIndex } = get();
+                const questions = get().getCurrentQuestions();
+                return questions[currentQuestionIndex];
+            },
+
+            getCurrentAnswers: () => {
+                const { phase, introAnswers, deepAnswers } = get();
+                return phase === "intro" ? introAnswers : deepAnswers;
+            },
+
+            getProgress: () => {
+                const { currentQuestionIndex } = get();
+                const questions = get().getCurrentQuestions();
+                return ((currentQuestionIndex + 1) / questions.length) * 100;
+            },
+
+            isLastQuestion: () => {
+                const { currentQuestionIndex } = get();
+                const questions = get().getCurrentQuestions();
+                return currentQuestionIndex === questions.length - 1;
+            },
+
+            canSubmit: () => {
+                const { isSubmitting } = get();
+                const answers = get().getCurrentAnswers();
+                if (isSubmitting) return false;
+                return answers.every((a) => a.answer.trim().length >= 2);
+            },
+        }),
+        {
+            name: "blanknote-test",
+            partialize: (state) => ({
+                phase: state.phase,
+                introAnswers: state.introAnswers,
+                deepAnswers: state.deepAnswers,
+                introResultId: state.introResultId,
+            }),
         }
-    },
-
-    setSubmitting: (isSubmitting: boolean) => {
-        set({ isSubmitting, error: null });
-    },
-
-    setComplete: (resultId: string) => {
-        set({ isComplete: true, resultId, isSubmitting: false });
-    },
-
-    setError: (error: string | null) => {
-        set({ error, isSubmitting: false });
-    },
-
-    reset: () => {
-        set(initialState);
-    },
-
-    getCurrentQuestion: () => {
-        const { currentQuestionIndex } = get();
-        return SCT_QUESTIONS[currentQuestionIndex];
-    },
-
-    getProgress: () => {
-        const { currentQuestionIndex } = get();
-        return ((currentQuestionIndex + 1) / SCT_QUESTIONS.length) * 100;
-    },
-
-    isLastQuestion: () => {
-        const { currentQuestionIndex } = get();
-        return currentQuestionIndex === SCT_QUESTIONS.length - 1;
-    },
-
-    canSubmit: () => {
-        const { answers, isSubmitting } = get();
-        if (isSubmitting) return false;
-        return answers.every((a) => a.answer.trim().length >= 2);
-    },
-}));
+    )
+);

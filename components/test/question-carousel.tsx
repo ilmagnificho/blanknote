@@ -7,7 +7,6 @@ import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useTestStore } from "@/store/test-store";
 import { ProgressBar } from "./progress-bar";
-import { SCT_QUESTIONS } from "@/types";
 
 interface QuestionCarouselProps {
     onComplete: () => void;
@@ -20,19 +19,21 @@ interface QuestionCarouselProps {
 export function QuestionCarousel({ onComplete }: QuestionCarouselProps) {
     const {
         currentQuestionIndex,
-        answers,
         setAnswer,
         nextQuestion,
         prevQuestion,
-        getProgress,
         isLastQuestion,
         canSubmit,
+        getCurrentQuestion,
+        getCurrentAnswers,
     } = useTestStore();
 
     const [direction, setDirection] = useState(0);
     const inputRef = useRef<HTMLTextAreaElement>(null);
-    const currentQuestion = SCT_QUESTIONS[currentQuestionIndex];
-    const currentAnswer = answers[currentQuestionIndex]?.answer || "";
+
+    const currentQuestion = getCurrentQuestion();
+    const currentAnswers = getCurrentAnswers();
+    const currentAnswer = currentAnswers[currentQuestionIndex]?.answer || "";
 
     // 문항 변경 시 포커스
     useEffect(() => {
@@ -101,11 +102,7 @@ export function QuestionCarousel({ onComplete }: QuestionCarouselProps) {
 
             {/* 프로그레스 바 */}
             <div className="w-full max-w-lg mb-12">
-                <ProgressBar
-                    progress={getProgress()}
-                    currentQuestion={currentQuestionIndex + 1}
-                    totalQuestions={SCT_QUESTIONS.length}
-                />
+                <ProgressBar />
             </div>
 
             {/* 문항 카드 */}
