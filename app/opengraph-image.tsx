@@ -3,7 +3,7 @@
 
 import { ImageResponse } from "next/og";
 
-export const runtime = "edge";
+// export const runtime = "edge"; // 호환성 문제로 기본 런타임 사용
 
 export const alt = "Blanknote - AI 심리 분석";
 export const size = {
