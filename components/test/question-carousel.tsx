@@ -92,21 +92,21 @@ export function QuestionCarousel({ onComplete }: QuestionCarouselProps) {
     };
 
     return (
-        <div className="min-h-screen flex flex-col items-center justify-center px-6 bg-black">
+        <div className="min-h-screen flex flex-col items-center px-6 bg-black pt-12 pb-8">
             {/* 로고 */}
-            <div className="absolute top-8 left-1/2 -translate-x-1/2">
+            <div className="mb-8 text-center">
                 <h1 className="text-xl font-mono tracking-widest text-zinc-600">
                     Blanknote<span className="text-white">_</span>
                 </h1>
             </div>
 
             {/* 프로그레스 바 */}
-            <div className="w-full max-w-lg mb-12">
+            <div className="w-full max-w-lg mb-10">
                 <ProgressBar />
             </div>
 
             {/* 문항 카드 */}
-            <div className="relative w-full max-w-lg h-[300px]">
+            <div className="relative w-full max-w-lg flex-1 min-h-[300px] flex flex-col justify-start">
                 <AnimatePresence mode="wait" custom={direction}>
                     <motion.div
                         key={currentQuestionIndex}
@@ -123,9 +123,9 @@ export function QuestionCarousel({ onComplete }: QuestionCarouselProps) {
                             <span className="text-sm text-zinc-500 mb-2 block">
                                 #{currentQuestion.id}
                             </span>
-                            <h2 className="text-2xl md:text-3xl font-medium text-white">
+                            <h2 className="text-2xl md:text-3xl font-medium text-white leading-tight">
                                 {currentQuestion.prompt}
-                                <span className="text-zinc-500">_______</span>
+                                <span className="text-zinc-500 inline-block ml-2">_______</span>
                             </h2>
                         </div>
 
@@ -135,16 +135,16 @@ export function QuestionCarousel({ onComplete }: QuestionCarouselProps) {
                             value={currentAnswer}
                             onChange={handleChange}
                             onKeyDown={handleKeyDown}
-                            placeholder="여기에 입력하세요..."
-                            className="w-full h-32 px-4 py-3 bg-zinc-900 border border-zinc-800 rounded-lg
-                         text-white placeholder-zinc-600 resize-none
-                         focus:outline-none focus:border-zinc-600 focus:ring-1 focus:ring-zinc-600
-                         transition-colors"
+                            placeholder="내용을 입력하세요..."
+                            className="w-full h-40 px-4 py-3 bg-zinc-900 border border-zinc-800 rounded-lg
+                                     text-white placeholder-zinc-600 resize-none
+                                     focus:outline-none focus:border-zinc-600 focus:ring-1 focus:ring-zinc-600
+                                     transition-colors text-lg"
                             autoFocus
                         />
 
                         {/* 글자 수 힌트 */}
-                        <p className="mt-2 text-sm text-zinc-600">
+                        <p className="mt-3 text-sm text-zinc-500 text-right">
                             {currentAnswer.length > 0 && currentAnswer.length < 2
                                 ? "2자 이상 입력해주세요"
                                 : "Enter를 눌러 다음으로"}
@@ -154,12 +154,12 @@ export function QuestionCarousel({ onComplete }: QuestionCarouselProps) {
             </div>
 
             {/* 네비게이션 버튼 */}
-            <div className="flex gap-4 mt-8">
+            <div className="w-full max-w-lg flex gap-4 mt-auto pt-8">
                 {currentQuestionIndex > 0 && (
                     <button
                         onClick={handlePrev}
-                        className="px-6 py-3 border border-zinc-700 text-zinc-400 rounded-full
-                       hover:border-zinc-500 hover:text-white transition-colors"
+                        className="px-6 py-4 border border-zinc-800 text-zinc-400 rounded-full
+                                 hover:bg-zinc-900 hover:text-white transition-colors"
                     >
                         이전
                     </button>
@@ -167,9 +167,9 @@ export function QuestionCarousel({ onComplete }: QuestionCarouselProps) {
                 <button
                     onClick={handleNext}
                     disabled={currentAnswer.trim().length < 2}
-                    className="px-8 py-3 bg-white text-black font-medium rounded-full
-                     hover:bg-zinc-200 transition-colors
-                     disabled:opacity-30 disabled:cursor-not-allowed"
+                    className="flex-1 px-6 py-4 bg-white text-black font-medium rounded-full
+                             hover:bg-zinc-200 transition-colors
+                             disabled:opacity-30 disabled:cursor-not-allowed text-center"
                 >
                     {isLastQuestion() ? "분석하기" : "다음"}
                 </button>

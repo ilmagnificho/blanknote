@@ -66,10 +66,10 @@ export async function analyzeIntro(
             .single();
 
         if (dbError) {
-            console.error("DB 저장 실패:", dbError);
+            console.error("DB 저장 실패 상세:", JSON.stringify(dbError, null, 2));
             return {
                 success: false,
-                error: "저장에 실패했습니다. 다시 시도해주세요.",
+                error: `저장에 실패했습니다. (${dbError.message})`,
             };
         }
 
