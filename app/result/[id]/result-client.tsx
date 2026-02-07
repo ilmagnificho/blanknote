@@ -352,47 +352,24 @@ export function ResultClient({ result }: ResultClientProps) {
                         </div>
                     </div>
                 ) : (
-                    // 무료 - 블러 처리 (Paywall 강화)
+                    // 무료 - 블러 처리 (Paywall 강화) - 간결하게 수정
                     <div className="relative p-1 rounded-2xl bg-gradient-to-b from-purple-900/30 to-zinc-900/30">
-                        <div className="p-8 bg-black rounded-xl overflow-hidden relative border border-zinc-800">
+                        <div className="p-6 bg-black rounded-xl overflow-hidden relative border border-zinc-800">
                             {/* 헤드라인 */}
-                            <div className="mb-8 text-center relative z-10">
+                            <div className="mb-4 text-center relative z-10">
                                 <span className="text-purple-400 text-xs font-mono tracking-widest uppercase mb-2 block">Premium Analysis</span>
-                                <h3 className="text-xl md:text-2xl text-white font-serif italic">
+                                <h3 className="text-lg md:text-xl text-white font-serif italic">
                                     &ldquo;무의식이 당신에게 보내는<br />3가지 핵심 시그널&rdquo;
                                 </h3>
                             </div>
 
-                            {/* 블러된 리스트 */}
-                            <div className="space-y-6 blur-[6px] opacity-40 select-none pointer-events-none grayscale-[50%]">
-                                <div className="border-l-2 border-purple-500/30 pl-4">
-                                    <h4 className="text-sm text-purple-300 mb-1">Mirror Image</h4>
-                                    <p className="text-zinc-400 text-sm leading-relaxed">
-                                        당신이 스스로를 정의하는 방식에는 큰 모순이 있습니다. 겉으로는 강해보이지만 내면에는...
-                                    </p>
+                            {/* 잠금 아이콘 + 메시지 (간소화) */}
+                            <div className="flex flex-col items-center justify-center py-6">
+                                <div className="bg-zinc-900/90 p-3 rounded-full border border-purple-500/30 mb-3 shadow-[0_0_30px_rgba(168,85,247,0.15)] animate-pulse">
+                                    <span className="text-2xl">🔒</span>
                                 </div>
-                                <div className="border-l-2 border-purple-500/30 pl-4">
-                                    <h4 className="text-sm text-purple-300 mb-1">Emotional Echo</h4>
-                                    <p className="text-zinc-400 text-sm leading-relaxed">
-                                        반복되는 대인관계의 패턴은 어린 시절의 특정 기억과 깊게 연관되어 있으며, 이것이 해결되지 않으면...
-                                    </p>
-                                </div>
-                                <div className="border-l-2 border-purple-500/30 pl-4">
-                                    <h4 className="text-sm text-purple-300 mb-1">Hidden Shadow</h4>
-                                    <p className="text-zinc-400 text-sm leading-relaxed">
-                                        가장 감추고 싶어하는 당신의 그림자는 사실 당신의 가장 큰 잠재력을 품고 있는...
-                                    </p>
-                                </div>
-                            </div>
-
-                            {/* 잠금 오버레이 */}
-                            <div className="absolute inset-0 flex flex-col items-center justify-center bg-gradient-to-t from-black via-black/80 to-transparent z-20">
-                                <div className="bg-zinc-900/90 p-4 rounded-full border border-purple-500/30 mb-4 shadow-[0_0_30px_rgba(168,85,247,0.15)] animate-pulse">
-                                    <span className="text-3xl">🔒</span>
-                                </div>
-                                <p className="text-white font-medium mb-2 text-lg">분석 결과가 도착했습니다</p>
-                                <p className="text-zinc-400 text-sm text-center px-6 leading-relaxed max-w-xs mb-6">
-                                    지금, 당신의 내면 깊은 곳에 숨겨진<br />
+                                <p className="text-white font-medium mb-1">분석 결과가 도착했습니다</p>
+                                <p className="text-zinc-400 text-sm text-center px-4 leading-relaxed">
                                     <span className="text-purple-400">진실된 이야기</span>를 마주하세요.
                                 </p>
                             </div>
@@ -401,26 +378,39 @@ export function ResultClient({ result }: ResultClientProps) {
                 )}
             </motion.div>
 
-            {/* 결제 CTA (미결제 시) */}
+            {/* 결제 CTA (미결제 시) - 간격 축소 */}
             {!isPaid && (
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.8 }}
-                    className="text-center mb-12"
+                    className="text-center mb-8"
                 >
                     <div className="relative group cursor-pointer" onClick={isGenerating ? undefined : handlePayment}>
                         <div className="absolute -inset-1 bg-gradient-to-r from-purple-600 to-pink-600 rounded-full blur opacity-30 group-hover:opacity-60 transition duration-1000 group-hover:duration-200"></div>
                         <button
                             disabled={isGenerating}
-                            className="relative w-full max-w-xs mx-auto block px-8 py-5 
+                            className={`relative w-full max-w-xs mx-auto block px-8 py-5 
                                 bg-zinc-900 ring-1 ring-white/10
                                 text-white font-medium rounded-full
-                                group-hover:bg-zinc-800 transition-all text-lg tracking-wide disabled:opacity-50"
+                                transition-all text-lg tracking-wide
+                                ${isGenerating ? 'animate-pulse' : 'group-hover:bg-zinc-800'}`}
                         >
-                            {isGenerating ? "⏳ 무의식 분석 및 이미지 생성 중..." : `🔓 전체 분석 + 이미지 (₩${PRICING.KRW.toLocaleString()})`}
+                            {isGenerating ? (
+                                <span className="flex items-center justify-center gap-2">
+                                    <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
+                                    무의식 분석 중...
+                                </span>
+                            ) : (
+                                `🔓 전체 분석 + 이미지 (₩${PRICING.KRW.toLocaleString()})`
+                            )}
                         </button>
                     </div>
+                    {isGenerating && (
+                        <p className="text-purple-400 text-sm mt-3 animate-pulse">
+                            AI가 당신의 무의식 이미지를 생성하고 있습니다...
+                        </p>
+                    )}
                     <p className="text-zinc-500 text-xs tracking-widest uppercase mt-4">
                         Full Analysis • Unconscious Image
                     </p>
