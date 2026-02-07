@@ -121,7 +121,7 @@ export function QuestionCarousel({ onComplete }: QuestionCarouselProps) {
                         {/* 문항 프롬프트 */}
                         <div className="mb-6">
                             <span className="text-sm text-zinc-500 mb-2 block">
-                                #{currentQuestion.id}
+                                #{currentQuestionIndex + 1}
                             </span>
                             <h2 className="text-2xl md:text-3xl font-medium text-white leading-tight">
                                 {currentQuestion.prompt}

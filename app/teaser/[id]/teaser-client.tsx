@@ -94,7 +94,7 @@ function IntroSequence({ onComplete }: { onComplete: () => void }) {
                             SYSTEM ACTIVE
                         </span>
                         <h2 className="text-2xl md:text-3xl font-light text-white">
-                            SCT 문장완성검사 모델 가동
+                            투사 심리 분석 모델 가동
                         </h2>
                     </motion.div>
                 )}
@@ -108,8 +108,8 @@ function IntroSequence({ onComplete }: { onComplete: () => void }) {
                         className="max-w-md mx-auto"
                     >
                         <p className="text-zinc-400 text-lg leading-relaxed">
-                            1919년, <strong className="text-zinc-200">에빙하우스</strong>가 고안한<br />
-                            투사적 심리 검사를 시작합니다.
+                            100여 년간 <strong className="text-zinc-200">임상 현장</strong>에서 검증된<br />
+                            투사적 심리 분석을 시작합니다.
                         </p>
                     </motion.div>
                 )}
@@ -150,7 +150,7 @@ function TeaserContent({
             {/* Header */}
             <header className="py-6 px-6 text-center border-b border-white/5">
                 <Link href="/" className="text-xl font-mono tracking-widest text-zinc-600 hover:text-zinc-400 transition-colors">
-                    Blanknote<span className="text-purple-500">_</span>SCT
+                    Blanknote<span className="text-purple-500">_</span>
                 </Link>
             </header>
 
@@ -163,7 +163,7 @@ function TeaserContent({
                         transition={{ delay: 0.2 }}
                     >
                         <span className="inline-block px-3 py-1 bg-purple-500/10 border border-purple-500/20 rounded-full text-purple-400 text-xs font-medium tracking-wide mb-6">
-                            SCT ANALYSIS RESULT
+                            DEEP MIND ANALYSIS
                         </span>
 
                         <h1 className="text-3xl md:text-4xl font-light text-white mb-4 leading-tight">
@@ -194,13 +194,13 @@ function TeaserContent({
                 <section className="max-w-2xl mx-auto mb-20">
                     <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 md:p-8">
                         <div className="flex items-start gap-4 mb-4">
-                            <span className="text-2xl">🧠</span>
+                            <span className="text-2xl">🔮</span>
                             <div>
                                 <h3 className="text-lg text-white font-medium mb-1">
                                     단순한 심리테스트가 아닙니다
                                 </h3>
                                 <p className="text-zinc-400 text-sm leading-relaxed">
-                                    <strong>문장완성검사(SCT)</strong>는 1919년 에빙하우스가 고안한 이래, 임상 심리학 현장에서 가장 널리 사용되는 <strong>투사적 검사(Projective Test)</strong> 기법입니다.
+                                    100여 년간 <strong>임상 심리학 현장</strong>에서 검증된 <strong>투사 기법(Projective Technique)</strong>을 AI가 현대적으로 재해석했습니다.
                                 </p>
                             </div>
                         </div>
