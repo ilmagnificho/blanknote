@@ -32,9 +32,7 @@ export default function TestPage() {
 
     // 컴포넌트 마운트 시 초기화 (Intro 단계)
     useEffect(() => {
-        if (phase !== "deep") {
-            reset();
-        }
+        reset();
     }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
     // Intro 분석 완료 핸들러

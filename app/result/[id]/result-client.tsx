@@ -144,9 +144,15 @@ export function ResultClient({ result }: ResultClientProps) {
                                     alt="무의식의 풍경"
                                     className="w-full h-full object-cover transition duration-700 group-hover:scale-105"
                                 />
-                                <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition duration-500 flex items-end justify-center p-6">
-                                    <p className="text-white/90 font-light">당신의 무의식이 그려낸 풍경</p>
+                                {/* 텍스트 오버레이 (카드 스타일) */}
+                                <div className="absolute inset-0 flex items-center justify-center p-6 z-10">
+                                    <div className="bg-black/30 backdrop-blur-sm p-6 rounded-xl border border-white/10 shadow-2xl max-w-[85%] text-center transform transition-all duration-500 hover:scale-105 hover:bg-black/40 group-hover:border-purple-500/30">
+                                        <p className="text-white/95 font-serif italic text-lg md:text-xl leading-relaxed drop-shadow-[0_2px_10px_rgba(0,0,0,0.8)]">
+                                            &ldquo;{result.analysis_text?.oneLiner || "당신의 내면은 깊고 고요합니다."}&rdquo;
+                                        </p>
+                                    </div>
                                 </div>
+                                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/20 opacity-60 group-hover:opacity-80 transition duration-500 pointer-events-none"></div>
                             </>
                         ) : (
                             <div className="text-center p-6">
