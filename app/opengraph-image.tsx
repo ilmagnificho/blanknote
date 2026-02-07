@@ -3,7 +3,7 @@
 
 import { ImageResponse } from "next/og";
 
-// export const runtime = "edge"; // 호환성 문제로 기본 런타임 사용
+export const runtime = "nodejs"; // Edge Runtime 대신 Node.js 사용 (정적 생성 호환)
 
 export const alt = "Blanknote - AI 심리 분석";
 export const size = {
