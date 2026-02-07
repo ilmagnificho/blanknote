@@ -6,18 +6,32 @@
 import { motion } from "framer-motion";
 
 interface KeywordTagsProps {
-    keywords: string[];
+    keywords: string[] | Record<string, string> | unknown;
 }
 
 /**
- * 분석 결과 키워드 태그 (3개 해시태그)
+ * 객체를 배열로 안전하게 변환
+ */
+function toStringArray(val: unknown): string[] {
+    if (!val) return [];
+    if (Array.isArray(val)) return val.map(v => String(v));
+    if (typeof val === 'object') return Object.values(val).map(v => String(v));
+    return [];
+}
+
+/**
+ * 분석 결과 키워드 태그
  */
 export function KeywordTags({ keywords }: KeywordTagsProps) {
+    const safeKeywords = toStringArray(keywords);
+
+    if (safeKeywords.length === 0) return null;
+
     return (
         <div className="flex flex-wrap gap-3 justify-center">
-            {keywords.map((keyword, index) => (
+            {safeKeywords.map((keyword, index) => (
                 <motion.span
-                    key={keyword}
+                    key={`${keyword}-${index}`}
                     initial={{ opacity: 0, scale: 0.8, y: 20 }}
                     animate={{ opacity: 1, scale: 1, y: 0 }}
                     transition={{ delay: index * 0.15, duration: 0.4 }}
