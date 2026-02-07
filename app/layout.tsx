@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { seoConfig } from "@/next-seo.config";
 import { Analytics } from "@/components/common/analytics";
+import { LanguageSwitcher } from "@/components/common/language-switcher";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -27,6 +28,7 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-background text-foreground`}
       >
+        <LanguageSwitcher />
         {children}
         <Analytics />
       </body>

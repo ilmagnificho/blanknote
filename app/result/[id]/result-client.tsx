@@ -65,7 +65,7 @@ export function ResultClient({ result }: ResultClientProps) {
                        text-white font-medium rounded-full
                        hover:opacity-90 transition-opacity"
                     >
-                        🔓 잠금 해제하기 (₩2,500)
+                        🔓 잠금 해제하기 (₩4,900)
                     </button>
                     <p className="text-center text-zinc-600 text-sm mt-3">
                         상세 분석 + 무의식 이미지 확인
