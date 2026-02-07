@@ -1,5 +1,5 @@
 // components/common/loading-screen.tsx
-// 분석 로딩 화면 - 동적 애니메이션
+// 분석 로딩 화면 - 동적 애니메이션 v2
 
 "use client";
 
