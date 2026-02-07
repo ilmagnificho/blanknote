@@ -17,7 +17,7 @@ interface ShareButtonProps {
 export function ShareButton({ keywords, oneLiner }: ShareButtonProps) {
     const [copied, setCopied] = useState(false);
 
-    const shareText = `나의 무의식 분석 결과\n\n${keywords.join(" ")}\n\n"${oneLiner}"\n\n🔮 Blanknote에서 나도 분석받기`;
+    const shareText = `나의 무의식 분석 결과\\n\\n${Array.isArray(keywords) ? keywords.join(" ") : ""}\\n\\n\"${oneLiner}\"\\n\\n🔮 Blanknote에서 나도 분석받기`;
     const shareUrl = typeof window !== "undefined" ? window.location.href : "";
 
     // 클립보드 복사

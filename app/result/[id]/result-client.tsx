@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import Link from "next/link";
@@ -18,7 +18,18 @@ export function ResultClient({ result }: ResultClientProps) {
     const isPaid = result.is_paid;
 
     const [isGenerating, setIsGenerating] = useState(false);
+    const [showStickyButton, setShowStickyButton] = useState(false);
     const router = useRouter();
+
+    // 스크롤 감지
+    useEffect(() => {
+        const handleScroll = () => {
+            // 결제 버튼이 화면 밖으로 나가면 sticky 버튼 표시
+            setShowStickyButton(window.scrollY > 800);
+        };
+        window.addEventListener("scroll", handleScroll);
+        return () => window.removeEventListener("scroll", handleScroll);
+    }, []);
 
     // 이미지 다운로드 핸들러 (Canvas API로 텍스트 오버레이)
     const handleDownload = async () => {
@@ -184,7 +195,7 @@ export function ResultClient({ result }: ResultClientProps) {
 
             {/* 키워드 태그 */}
             <div className="mb-12">
-                <KeywordTags keywords={analysis?.keywords || []} />
+                <KeywordTags keywords={Array.isArray(analysis?.keywords) ? analysis.keywords : []} />
             </div>
 
             {/* 한 줄 분석 */}
@@ -430,10 +441,30 @@ export function ResultClient({ result }: ResultClientProps) {
                 transition={{ delay: isPaid ? 0.8 : 1.0 }}
             >
                 <ShareButton
-                    keywords={analysis?.keywords || []}
+                    keywords={Array.isArray(analysis?.keywords) ? analysis.keywords : []}
                     oneLiner={analysis?.oneLiner || ""}
                 />
             </motion.div>
+
+            {/* Sticky 결제 버튼 (미결제 시) */}
+            {!isPaid && showStickyButton && (
+                <motion.div
+                    initial={{ y: 100, opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    exit={{ y: 100, opacity: 0 }}
+                    className="fixed bottom-0 left-0 right-0 z-50 p-4 bg-gradient-to-t from-black via-black/95 to-transparent backdrop-blur-lg border-t border-zinc-800/50"
+                >
+                    <div className="max-w-md mx-auto">
+                        <button
+                            onClick={isGenerating ? undefined : handlePayment}
+                            disabled={isGenerating}
+                            className="w-full px-8 py-4 bg-gradient-to-r from-purple-600 to-pink-600 text-white font-medium rounded-full hover:from-purple-500 hover:to-pink-500 transition-all shadow-lg shadow-purple-500/30 disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                            {isGenerating ? "⏳ 분석 생성 중..." : `🔓 전체 분석 보기 (₩${PRICING.KRW.toLocaleString()})`}
+                        </button>
+                    </div>
+                </motion.div>
+            )}
         </div>
     );
 }
