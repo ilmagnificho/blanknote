@@ -87,9 +87,13 @@ export async function analyzeAndSave(
         };
     } catch (error) {
         console.error("분석 중 오류:", error);
+        console.error("에러 상세:", JSON.stringify(error, null, 2));
 
         // 사용자 친화적인 에러 메시지
         if (error instanceof Error) {
+            console.error("에러 메시지:", error.message);
+            console.error("에러 스택:", error.stack);
+
             if (error.message.includes("rate_limit")) {
                 return {
                     success: false,
@@ -102,6 +106,11 @@ export async function analyzeAndSave(
                     error: "무의식 탐색 에너지가 부족합니다. 관리자에게 문의해주세요.",
                 };
             }
+            // 실제 에러 메시지 표시 (디버깅용)
+            return {
+                success: false,
+                error: `디버그: ${error.message}`,
+            };
         }
 
         return {
